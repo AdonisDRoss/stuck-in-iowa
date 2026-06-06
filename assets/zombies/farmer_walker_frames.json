@@ -1,0 +1,23 @@
+{
+  "farmer_walker_walk.png": {
+    "frameWidth": 256,
+    "frameHeight": 256,
+    "columns": 6,
+    "rows": 4,
+    "notes": "Prototype walk sheet. Suggested rows: down/front, right, left, up/back. Use 0-5, 6-11, 12-17, 18-23."
+  },
+  "farmer_walker_attack.png": {
+    "frameWidth": 256,
+    "frameHeight": 256,
+    "columns": 6,
+    "rows": 4,
+    "notes": "Prototype attack sheet. Suggested rows: down/front, right, left, up/back. Use 0-5, 6-11, 12-17, 18-23."
+  },
+  "farmer_walker_ko.png": {
+    "frameWidth": 256,
+    "frameHeight": 256,
+    "columns": 6,
+    "rows": 4,
+    "notes": "Prototype KO sheet. Use frames 0-23 or select the best collapsing row for first implementation."
+  }
+}
