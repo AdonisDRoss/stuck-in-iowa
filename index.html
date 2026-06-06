@@ -36,6 +36,11 @@ class MainStreetScene extends Phaser.Scene {
       frameHeight: 128
     });
 
+    this.load.spritesheet("donny_punch", "assets/characters/donny_punch_4dir_128x128_phaser.png", {
+      frameWidth: 128,
+      frameHeight: 128
+    });
+
     this.load.image("auto_shop", "assets/buildings/auto_shop.png");
 
     this.load.spritesheet("farmer_walk", "assets/zombies/farmer_walker_walk.png", {
@@ -86,6 +91,8 @@ class MainStreetScene extends Phaser.Scene {
     this.zombieDead = false;
     this.zombieAttacking = false;
     this.zombieLastDir = "down";
+    this.facing = "down";
+    this.isAttacking = false;
 
     this.makeMap();
 
@@ -159,6 +166,34 @@ class MainStreetScene extends Phaser.Scene {
       frames: this.anims.generateFrameNumbers("donny", { start: 24, end: 31 }),
       frameRate: 8,
       repeat: -1
+    });
+
+    this.anims.create({
+      key: "punch_down",
+      frames: this.anims.generateFrameNumbers("donny_punch", { start: 0, end: 5 }),
+      frameRate: 14,
+      repeat: 0
+    });
+
+    this.anims.create({
+      key: "punch_right",
+      frames: this.anims.generateFrameNumbers("donny_punch", { start: 6, end: 11 }),
+      frameRate: 14,
+      repeat: 0
+    });
+
+    this.anims.create({
+      key: "punch_left",
+      frames: this.anims.generateFrameNumbers("donny_punch", { start: 12, end: 17 }),
+      frameRate: 14,
+      repeat: 0
+    });
+
+    this.anims.create({
+      key: "punch_up",
+      frames: this.anims.generateFrameNumbers("donny_punch", { start: 18, end: 23 }),
+      frameRate: 14,
+      repeat: 0
     });
   }
 
@@ -422,9 +457,19 @@ class MainStreetScene extends Phaser.Scene {
   }
 
   attack() {
-    if (this.attackCooldown) return;
+    if (this.attackCooldown || this.isAttacking) return;
 
     this.attackCooldown = true;
+    this.isAttacking = true;
+
+    this.player.setTexture("donny_punch");
+    this.player.anims.play("punch_" + this.facing, true);
+
+    this.player.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
+      this.isAttacking = false;
+      this.player.setTexture("donny");
+      this.player.setFrame(0);
+    });
 
     this.time.delayedCall(350, () => {
       this.attackCooldown = false;
@@ -542,16 +587,23 @@ class MainStreetScene extends Phaser.Scene {
 
     this.player.body.velocity.normalize().scale(speed);
 
-    if (left) {
-      this.player.anims.play("walk_left", true);
-    } else if (right) {
-      this.player.anims.play("walk_right", true);
-    } else if (up) {
-      this.player.anims.play("walk_up", true);
-    } else if (down) {
-      this.player.anims.play("walk_down", true);
-    } else {
-      this.player.anims.stop();
+    if (left) this.facing = "left";
+    else if (right) this.facing = "right";
+    else if (up) this.facing = "up";
+    else if (down) this.facing = "down";
+
+    if (!this.isAttacking) {
+      if (left) {
+        this.player.anims.play("walk_left", true);
+      } else if (right) {
+        this.player.anims.play("walk_right", true);
+      } else if (up) {
+        this.player.anims.play("walk_up", true);
+      } else if (down) {
+        this.player.anims.play("walk_down", true);
+      } else {
+        this.player.anims.stop();
+      }
     }
 
     this.updateZombie();
