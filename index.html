@@ -31,29 +31,29 @@ class MainStreetScene extends Phaser.Scene {
   }
 
   preload() {
-    this.load.spritesheet("donny", "assets/characters/donny_walk_4dir_128x128_phaser.png", {
+    this.load.spritesheet("donny", "assets/characters/donny_walk_4dir_128x128_phaser.png?v=021", {
       frameWidth: 128,
       frameHeight: 128
     });
 
-    this.load.spritesheet("donny_punch", "assets/characters/donny_punch_4dir_128x128_phaser.png", {
+    this.load.spritesheet("donny_punch", "assets/characters/donny_punch_4dir_128x128_phaser.png?v=021", {
       frameWidth: 128,
       frameHeight: 128
     });
 
-    this.load.image("auto_shop", "assets/buildings/auto_shop.png");
+    this.load.image("auto_shop", "assets/buildings/auto_shop.png?v=021");
 
-    this.load.spritesheet("farmer_walk", "assets/zombies/farmer_walker_walk.png", {
+    this.load.spritesheet("farmer_walk", "assets/zombies/farmer_walker_walk.png?v=021", {
       frameWidth: 256,
       frameHeight: 256
     });
 
-    this.load.spritesheet("farmer_attack", "assets/zombies/farmer_walker_attack.png", {
+    this.load.spritesheet("farmer_attack", "assets/zombies/farmer_walker_attack.png?v=021", {
       frameWidth: 256,
       frameHeight: 256
     });
 
-    this.load.spritesheet("farmer_ko", "assets/zombies/farmer_walker_ko.png", {
+    this.load.spritesheet("farmer_ko", "assets/zombies/farmer_walker_ko.png?v=021", {
       frameWidth: 256,
       frameHeight: 256
     });
@@ -199,71 +199,27 @@ class MainStreetScene extends Phaser.Scene {
   }
 
   createZombieAnims() {
-    // Uploaded zombie sheets are 6 columns x 4 rows, 256x256 per cell.
-    // Walk sheet rows:
-    // 0 = down/front, 1 = right-side, 2 = up/back, 3 = unused/backup.
-    // Left reuses right-side frames with flipX.
+    // v0.2.1 single-row zombie sheets:
+    // Each zombie sheet should be 2048x256.
+    // 8 frames total, each frame is 256x256.
+    // The zombie uses one walking direction and flips left/right.
     this.anims.create({
-      key: "farmer_walk_down",
-      frames: this.anims.generateFrameNumbers("farmer_walk", { start: 0, end: 5 }),
+      key: "farmer_walk",
+      frames: this.anims.generateFrameNumbers("farmer_walk", { start: 0, end: 7 }),
       frameRate: 7,
       repeat: -1
     });
 
     this.anims.create({
-      key: "farmer_walk_right",
-      frames: this.anims.generateFrameNumbers("farmer_walk", { start: 6, end: 11 }),
-      frameRate: 7,
-      repeat: -1
-    });
-
-    this.anims.create({
-      key: "farmer_walk_left",
-      frames: this.anims.generateFrameNumbers("farmer_walk", { start: 6, end: 11 }),
-      frameRate: 7,
-      repeat: -1
-    });
-
-    this.anims.create({
-      key: "farmer_walk_up",
-      frames: this.anims.generateFrameNumbers("farmer_walk", { start: 12, end: 17 }),
-      frameRate: 7,
-      repeat: -1
-    });
-
-    // Attack sheet is also 6 columns x 4 rows.
-    this.anims.create({
-      key: "farmer_attack_down",
-      frames: this.anims.generateFrameNumbers("farmer_attack", { start: 0, end: 5 }),
+      key: "farmer_attack",
+      frames: this.anims.generateFrameNumbers("farmer_attack", { start: 0, end: 7 }),
       frameRate: 10,
       repeat: 0
     });
 
-    this.anims.create({
-      key: "farmer_attack_right",
-      frames: this.anims.generateFrameNumbers("farmer_attack", { start: 6, end: 11 }),
-      frameRate: 10,
-      repeat: 0
-    });
-
-    this.anims.create({
-      key: "farmer_attack_left",
-      frames: this.anims.generateFrameNumbers("farmer_attack", { start: 6, end: 11 }),
-      frameRate: 10,
-      repeat: 0
-    });
-
-    this.anims.create({
-      key: "farmer_attack_up",
-      frames: this.anims.generateFrameNumbers("farmer_attack", { start: 18, end: 23 }),
-      frameRate: 10,
-      repeat: 0
-    });
-
-    // KO uses first row for the collapse.
     this.anims.create({
       key: "farmer_ko",
-      frames: this.anims.generateFrameNumbers("farmer_ko", { start: 0, end: 5 }),
+      frames: this.anims.generateFrameNumbers("farmer_ko", { start: 0, end: 7 }),
       frameRate: 7,
       repeat: 0
     });
@@ -344,7 +300,7 @@ class MainStreetScene extends Phaser.Scene {
       fontFamily: "Arial"
     }).setScrollFactor(0).setDepth(1000);
 
-    this.versionText = this.add.text(20, 675, "v0.1.6 - Solid Auto Shop", {
+    this.versionText = this.add.text(20, 675, "v0.2.1 - Single Row Zombie Sheets", {
       fontSize: "14px",
       color: "#bbbbbb",
       fontFamily: "Arial"
@@ -534,7 +490,7 @@ class MainStreetScene extends Phaser.Scene {
 
     this.zombie.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
       this.zombie.anims.stop();
-      this.zombie.setFrame(5);
+      this.zombie.setFrame(7);
     });
   }
 
@@ -560,21 +516,16 @@ class MainStreetScene extends Phaser.Scene {
       this.zombie.y += Math.sin(angle) * 0.9;
 
       const dx = this.player.x - this.zombie.x;
-      const dy = this.player.y - this.zombie.y;
 
-      if (Math.abs(dx) > Math.abs(dy)) {
-        this.zombieLastDir = dx > 0 ? "right" : "left";
-      } else {
-        this.zombieLastDir = dy > 0 ? "down" : "up";
-      }
-
-      if (this.zombieLastDir === "left") {
+      // Single-row zombie sheet faces right by default.
+      // Flip it when chasing left.
+      if (dx < 0) {
         this.zombie.setFlipX(true);
-        this.zombie.anims.play("farmer_walk_left", true);
       } else {
         this.zombie.setFlipX(false);
-        this.zombie.anims.play("farmer_walk_" + this.zombieLastDir, true);
       }
+
+      this.zombie.anims.play("farmer_walk", true);
     } else {
       this.zombie.anims.stop();
     }
