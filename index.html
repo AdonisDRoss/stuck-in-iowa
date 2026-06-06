@@ -10,12 +10,15 @@
 
 <style>
 body{
-    margin:0;
-    overflow:hidden;
-    background:#111;
+margin:0;
+overflow:hidden;
+background:#111;
+touch-action:none;
 }
+
 canvas{
-    display:block;
+display:block;
+margin:auto;
 }
 </style>
 </head>
@@ -26,361 +29,377 @@ canvas{
 
 class MainStreetScene extends Phaser.Scene{
 
-    constructor(){
-        super("MainStreet");
-    }
+constructor(){
+super("MainStreet");
+}
 
-    preload(){
+preload(){
 
-        this.load.spritesheet(
-            "donny",
-            "assets/characters/donny_walk_4dir_128x128_phaser.png",
-            {
-                frameWidth:128,
-                frameHeight:128
-            }
-        );
+this.load.spritesheet(
+"donny",
+"assets/characters/donny_walk_4dir_128x128_phaser.png",
+{
+frameWidth:128,
+frameHeight:128
+}
+);
 
-    }
+}
 
-    create(){
+create(){
 
-        this.physics.world.setBounds(0,0,2400,1400);
+this.mobile={
+up:false,
+down:false,
+left:false,
+right:false
+};
 
-        this.cameras.main.setBounds(0,0,2400,1400);
+this.physics.world.setBounds(0,0,2400,1400);
 
-        this.add.rectangle(
-            1200,
-            700,
-            2400,
-            1400,
-            0x35502f
-        );
+this.cameras.main.setBounds(0,0,2400,1400);
 
-        this.add.rectangle(
-            1200,
-            700,
-            2400,
-            300,
-            0x2b2b2b
-        );
+this.add.rectangle(
+1200,
+700,
+2400,
+1400,
+0x36542d
+);
 
-        for(let x=50;x<2400;x+=180){
+this.add.rectangle(
+1200,
+700,
+2400,
+320,
+0x2d2d2d
+);
 
-            this.add.rectangle(
-                x,
-                700,
-                90,
-                12,
-                0xd9b54c
-            );
-        }
+for(let x=0;x<2400;x+=220){
 
-        this.makeBuilding(
-            250,
-            250,
-            300,
-            220,
-            "GAS"
-        );
+this.add.rectangle(
+x,
+700,
+120,
+12,
+0xd8b64d
+);
 
-        this.makeBuilding(
-            700,
-            250,
-            350,
-            220,
-            "DINER"
-        );
+}
 
-        this.makeBuilding(
-            1150,
-            250,
-            350,
-            220,
-            "AUTO"
-        );
+this.add.rectangle(
+1150,
+250,
+320,
+220,
+0x555555
+);
 
-        this.makeBuilding(
-            1600,
-            250,
-            350,
-            220,
-            "BAR"
-        );
+this.add.text(
+1150,
+250,
+"AUTO SHOP",
+{
+fontSize:"28px",
+color:"#ffffff"
+}
+).setOrigin(0.5);
 
-        this.makeBuilding(
-            2050,
-            250,
-            350,
-            220,
-            "MOTEL"
-        );
+this.safehouse=this.add.rectangle(
+1150,
+250,
+250,
+180,
+0x00ff00,
+0.2
+);
 
-        this.player =
-            this.physics.add.sprite(
-                1200,
-                700,
-                "donny",
-                0
-            );
+this.player=this.physics.add.sprite(
+1200,
+700,
+"donny",
+0
+);
 
-        this.player.setCollideWorldBounds(true);
+this.player.setCollideWorldBounds(true);
 
-        this.cameras.main.startFollow(
-            this.player
-        );
+this.player.setScale(1);
 
-        this.jim =
-            this.add.rectangle(
-                1050,
-                500,
-                40,
-                60,
-                0x00ffff
-            );
+this.cameras.main.startFollow(
+this.player,
+true,
+0.08,
+0.08
+);
 
-        this.add.text(
-            1020,
-            450,
-            "JIM",
-            {
-                color:"#fff"
-            }
-        );
+this.jim=this.add.rectangle(
+1000,
+520,
+40,
+60,
+0x00ffff
+);
 
-        this.safehouse =
-            this.add.rectangle(
-                1150,
-                250,
-                260,
-                180,
-                0x00ff00,
-                0.20
-            );
+this.add.text(
+970,
+470,
+"JIM",
+{
+fontSize:"18px",
+color:"#ffffff"
+}
+);
 
-        this.food=5;
-        this.medicine=2;
-        this.wood=8;
-        this.survivors=0;
+this.food=5;
+this.medicine=2;
+this.wood=8;
+this.survivors=0;
 
-        this.jimFollowing=false;
-        this.safehouseUnlocked=false;
+this.jimFollowing=false;
 
-        this.mission=
-            this.add.text(
-                20,
-                20,
-                "Talk To Jim",
-                {
-                    fontSize:"22px",
-                    color:"#ffff00"
-                }
-            )
-            .setScrollFactor(0);
+this.mission=this.add.text(
+20,
+20,
+"Talk To Jim",
+{
+fontSize:"24px",
+color:"#ffff00"
+}
+)
+.setScrollFactor(0);
 
-        this.resources=
-            this.add.text(
-                20,
-                60,
-                "",
-                {
-                    fontSize:"18px",
-                    color:"#ffffff"
-                }
-            )
-            .setScrollFactor(0);
+this.resources=this.add.text(
+20,
+60,
+"",
+{
+fontSize:"18px",
+color:"#ffffff"
+}
+)
+.setScrollFactor(0);
 
-        this.keys =
-            this.input.keyboard.addKeys({
-                up:"W",
-                down:"S",
-                left:"A",
-                right:"D",
-                interact:"E"
-            });
+this.createMobileControls();
 
-        this.mobile={
-            up:false,
-            down:false,
-            left:false,
-            right:false
-        };
+}
 
-        this.createMobileControls();
-    }
+createMobileControls(){
 
-    makeBuilding(x,y,w,h,name){
+const baseX=120;
+const baseY=600;
 
-        this.add.rectangle(
-            x,
-            y,
-            w,
-            h,
-            0x444444
-        );
+this.stickBase=this.add.circle(
+baseX,
+baseY,
+65,
+0x000000,
+0.45
+)
+.setScrollFactor(0)
+.setInteractive();
 
-        this.add.text(
-            x,
-            y,
-            name,
-            {
-                fontSize:"26px",
-                color:"#ffffff"
-            }
-        ).setOrigin(0.5);
-    }
+this.stickKnob=this.add.circle(
+baseX,
+baseY,
+28,
+0xffffff,
+0.55
+)
+.setScrollFactor(0);
 
-    createMobileControls(){
+this.stickActive=false;
 
-        const left =
-            this.add.circle(
-                120,
-                600,
-                55,
-                0x000000,
-                0.4
-            )
-            .setScrollFactor(0)
-            .setInteractive();
+this.stickBase.on("pointerdown",()=>{
+this.stickActive=true;
+});
 
-        const right =
-            this.add.circle(
-                1180,
-                600,
-                55,
-                0x444444,
-                0.7
-            )
-            .setScrollFactor(0)
-            .setInteractive();
+this.input.on("pointerup",()=>{
 
-        this.add.text(
-            1180,
-            600,
-            "A",
-            {
-                fontSize:"28px",
-                color:"#fff"
-            }
-        )
-        .setOrigin(0.5)
-        .setScrollFactor(0);
+this.stickActive=false;
 
-    }
+this.mobile.left=false;
+this.mobile.right=false;
+this.mobile.up=false;
+this.mobile.down=false;
 
-    update(){
+this.stickKnob.x=baseX;
+this.stickKnob.y=baseY;
 
-        const speed=220;
+});
 
-        this.player.setVelocity(0);
+this.input.on("pointermove",(pointer)=>{
 
-        if(this.keys.left.isDown)
-            this.player.setVelocityX(-speed);
+if(!this.stickActive)return;
 
-        if(this.keys.right.isDown)
-            this.player.setVelocityX(speed);
+const dx=pointer.x-baseX;
+const dy=pointer.y-baseY;
 
-        if(this.keys.up.isDown)
-            this.player.setVelocityY(-speed);
+this.mobile.left=dx<-20;
+this.mobile.right=dx>20;
+this.mobile.up=dy<-20;
+this.mobile.down=dy>20;
 
-        if(this.keys.down.isDown)
-            this.player.setVelocityY(speed);
+const dist=Math.min(
+40,
+Math.sqrt(dx*dx+dy*dy)
+);
 
-        this.player.body.velocity
-            .normalize()
-            .scale(speed);
+const angle=Math.atan2(dy,dx);
 
-        const dist=
-            Phaser.Math.Distance.Between(
-                this.player.x,
-                this.player.y,
-                this.jim.x,
-                this.jim.y
-            );
+this.stickKnob.x=
+baseX+
+Math.cos(angle)*dist;
 
-        if(
-            dist<90 &&
-            Phaser.Input.Keyboard.JustDown(
-                this.keys.interact
-            ) &&
-            !this.jimFollowing
-        ){
+this.stickKnob.y=
+baseY+
+Math.sin(angle)*dist;
 
-            this.jimFollowing=true;
+});
 
-            this.mission.setText(
-                "Escort Jim To Auto Shop"
-            );
-        }
+const btn=this.add.circle(
+1180,
+600,
+55,
+0x444444,
+0.75
+)
+.setScrollFactor(0)
+.setInteractive();
 
-        if(this.jimFollowing){
+this.add.text(
+1180,
+600,
+"A",
+{
+fontSize:"28px",
+color:"#ffffff"
+}
+)
+.setOrigin(0.5)
+.setScrollFactor(0);
 
-            const angle=
-                Phaser.Math.Angle.Between(
-                    this.jim.x,
-                    this.jim.y,
-                    this.player.x,
-                    this.player.y
-                );
+btn.on("pointerdown",()=>{
 
-            this.jim.x+=Math.cos(angle)*1.5;
-            this.jim.y+=Math.sin(angle)*1.5;
+const d=Phaser.Math.Distance.Between(
+this.player.x,
+this.player.y,
+this.jim.x,
+this.jim.y
+);
 
-            const safeDist=
-                Phaser.Math.Distance.Between(
-                    this.jim.x,
-                    this.jim.y,
-                    1150,
-                    250
-                );
+if(d<120 && !this.jimFollowing){
 
-            if(
-                safeDist<100 &&
-                !this.safehouseUnlocked
-            ){
+this.jimFollowing=true;
 
-                this.safehouseUnlocked=true;
+this.mission.setText(
+"Escort Jim To Auto Shop"
+);
 
-                this.food+=3;
-                this.medicine+=1;
-                this.wood+=5;
-                this.survivors+=1;
+}
 
-                this.mission.setText(
-                    "AUTO SHOP SECURED"
-                );
-            }
-        }
+});
 
-        this.resources.setText(
-            "Food: "+this.food+
-            "\nMedicine: "+this.medicine+
-            "\nWood: "+this.wood+
-            "\nSurvivors: "+this.survivors
-        );
-    }
+}
+
+update(){
+
+const speed=240;
+
+this.player.setVelocity(0);
+
+if(this.mobile.left){
+this.player.setVelocityX(-speed);
+}
+
+if(this.mobile.right){
+this.player.setVelocityX(speed);
+}
+
+if(this.mobile.up){
+this.player.setVelocityY(-speed);
+}
+
+if(this.mobile.down){
+this.player.setVelocityY(speed);
+}
+
+this.player.body.velocity
+.normalize()
+.scale(speed);
+
+if(this.jimFollowing){
+
+const angle=
+Phaser.Math.Angle.Between(
+this.jim.x,
+this.jim.y,
+this.player.x,
+this.player.y
+);
+
+this.jim.x+=Math.cos(angle)*1.4;
+this.jim.y+=Math.sin(angle)*1.4;
+
+const safeDist=
+Phaser.Math.Distance.Between(
+this.jim.x,
+this.jim.y,
+1150,
+250
+);
+
+if(
+safeDist<100 &&
+this.survivors===0
+){
+
+this.food+=3;
+this.medicine+=1;
+this.wood+=5;
+this.survivors=1;
+
+this.mission.setText(
+"AUTO SHOP SECURED"
+);
+
+}
+
+}
+
+this.resources.setText(
+"Food: "+this.food+
+"\nMedicine: "+this.medicine+
+"\nWood: "+this.wood+
+"\nSurvivors: "+this.survivors
+);
+
+}
+
 }
 
 new Phaser.Game({
 
-    type:Phaser.AUTO,
+type:Phaser.AUTO,
 
-    width:1280,
-    height:720,
+width:1280,
+height:720,
 
-    physics:{
-        default:"arcade",
-        arcade:{
-            debug:false
-        }
-    },
+backgroundColor:"#111111",
 
-    scale:{
-        mode:Phaser.Scale.FIT,
-        autoCenter:Phaser.Scale.CENTER_BOTH
-    },
+physics:{
+default:"arcade",
+arcade:{
+debug:false
+}
+},
 
-    scene:[MainStreetScene]
+scale:{
+mode:Phaser.Scale.FIT,
+autoCenter:Phaser.Scale.CENTER_BOTH
+},
+
+scene:[MainStreetScene]
+
 });
 
 </script>
