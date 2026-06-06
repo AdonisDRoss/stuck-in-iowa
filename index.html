@@ -4,786 +4,249 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>Stuck In Iowa: Dead County</title>
-
 <script src="https://cdn.jsdelivr.net/npm/phaser@3.80.1/dist/phaser.min.js"></script>
-
 <style>
-html, body {
-  margin: 0;
-  padding: 0;
-  background: #000;
-  overflow: hidden;
-  touch-action: none;
-  user-select: none;
-}
-canvas {
-  display: block;
-  margin: 0 auto;
-}
+html, body { margin:0; padding:0; background:#000; overflow:hidden; touch-action:none; user-select:none; }
+canvas { display:block; margin:0 auto; }
+#errorBox { position:fixed; left:8px; top:8px; z-index:99999; color:#ff4444; background:rgba(0,0,0,.75); font:14px monospace; white-space:pre-wrap; max-width:96vw; padding:8px; display:none; }
 </style>
 </head>
-
 <body>
+<div id="errorBox"></div>
 <script>
+const errorBox = document.getElementById('errorBox');
+function showError(msg){ errorBox.style.display='block'; errorBox.textContent += msg + "\n"; }
+window.addEventListener('error', e => showError('JS ERROR: ' + e.message + ' @ ' + e.filename + ':' + e.lineno));
+window.addEventListener('unhandledrejection', e => showError('PROMISE ERROR: ' + e.reason));
+
 class MainStreetScene extends Phaser.Scene {
-  constructor() {
-    super("MainStreetScene");
+  constructor(){ super('MainStreetScene'); }
+
+  preload(){
+    const v = '020safe' + Date.now();
+
+    this.load.on('loaderror', file => {
+      showError('ASSET FAILED: ' + file.key + ' -> ' + (file.src || file.url || 'unknown'));
+    });
+
+    this.load.spritesheet('donny', 'assets/characters/donny_walk_4dir_128x128_phaser.png?v=' + v, { frameWidth:128, frameHeight:128 });
+    this.load.spritesheet('donny_punch', 'assets/characters/donny_punch_4dir_128x128_phaser.png?v=' + v, { frameWidth:128, frameHeight:128 });
+    this.load.image('auto_shop', 'assets/buildings/auto_shop.png?v=' + v);
+    this.load.image('road_tiles', 'assets/tiles/road_tiles.png?v=' + v);
+
+    // Keep zombie files optional. If they fail, game still runs with rectangle zombie.
+    this.load.spritesheet('farmer_walk', 'assets/zombies/farmer_walker_walk.png?v=' + v, { frameWidth:256, frameHeight:256 });
+    this.load.spritesheet('farmer_ko', 'assets/zombies/farmer_walker_ko.png?v=' + v, { frameWidth:256, frameHeight:256 });
   }
 
-  preload() {
-    this.load.spritesheet("donny", "assets/characters/donny_walk_4dir_128x128_phaser.png", {
-      frameWidth: 128,
-      frameHeight: 128
-    });
-
-    this.load.spritesheet("donny_punch", "assets/characters/donny_punch_4dir_128x128_phaser.png", {
-      frameWidth: 128,
-      frameHeight: 128
-    });
-
-    this.load.image("auto_shop", "assets/buildings/auto_shop.png");
-
-    this.load.image("road_tiles", "assets/tiles/road_tiles.png?v=022");
-
-    this.load.spritesheet("farmer_walk", "assets/zombies/farmer_walker_walk.png", {
-      frameWidth: 256,
-      frameHeight: 256
-    });
-
-    this.load.spritesheet("farmer_attack", "assets/zombies/farmer_walker_attack.png", {
-      frameWidth: 256,
-      frameHeight: 256
-    });
-
-    this.load.spritesheet("farmer_ko", "assets/zombies/farmer_walker_ko.png", {
-      frameWidth: 256,
-      frameHeight: 256
-    });
-  }
-
-  create() {
+  create(){
     this.input.addPointer(5);
+    this.worldW = 2400; this.worldH = 1400;
+    this.physics.world.setBounds(0,0,this.worldW,this.worldH);
+    this.cameras.main.setBounds(0,0,this.worldW,this.worldH);
 
-    this.worldW = 2400;
-    this.worldH = 1400;
-
-    this.physics.world.setBounds(0, 0, this.worldW, this.worldH);
-    this.cameras.main.setBounds(0, 0, this.worldW, this.worldH);
-
-    this.mobile = {
-      left: false,
-      right: false,
-      up: false,
-      down: false,
-      a: false,
-      b: false,
-      x: false,
-      y: false
-    };
-
-    this.food = 5;
-    this.medicine = 2;
-    this.wood = 8;
-    this.survivors = 0;
-    this.jimFollowing = false;
-    this.safehouseUnlocked = false;
-    this.attackCooldown = false;
-    this.day = 1;
-    this.minutes = 8 * 60;
-    this.zombieDead = false;
-    this.zombieAttacking = false;
-    this.zombieLastDir = "down";
-    this.facing = "down";
-    this.isAttacking = false;
+    this.mobile = { left:false,right:false,up:false,down:false,a:false,b:false,x:false,y:false };
+    this.food=5; this.medicine=2; this.wood=8; this.survivors=0;
+    this.jimFollowing=false; this.safehouseUnlocked=false; this.attackCooldown=false;
+    this.day=1; this.minutes=8*60; this.facing='down'; this.isAttacking=false; this.zombieDead=false;
 
     this.makeMap();
+    this.createPlayer();
+    this.createNPCs();
+    this.createZombie();
 
-    this.player = this.physics.add.sprite(1200, 720, "donny", 0);
-    this.player.setCollideWorldBounds(true);
-    this.player.setScale(1.15);
-
-    this.cameras.main.startFollow(this.player, true, 0.08, 0.08);
-
-    this.createPlayerAnims();
-    this.createZombieAnims();
-
-    this.jim = this.add.rectangle(1030, 500, 42, 62, 0x00ffff);
-    this.jimLabel = this.add.text(1005, 450, "JIM", {
-      fontSize: "18px",
-      color: "#ffffff",
-      fontFamily: "Arial"
-    });
-
-    this.safehouse = this.add.rectangle(1150, 250, 260, 180, 0x00ff00, 0.18);
-
-    this.zombie = this.physics.add.sprite(350, 1180, "farmer_walk", 0);
-    this.zombie.setScale(0.42);
-    this.zombie.setCollideWorldBounds(true);
-    this.zombie.body.setSize(95, 130);
-    this.zombie.body.setOffset(80, 90);
-    this.zombie.hp = 100;
-
-    this.zombieLabel = this.add.text(295, 1130, "FARMER WALKER", {
-      fontSize: "15px",
-      color: "#d6ffd6",
-      fontFamily: "Arial"
-    });
-
-    this.keys = this.input.keyboard.addKeys({
-      up: "W",
-      down: "S",
-      left: "A",
-      right: "D",
-      interact: "E",
-      attack: "SPACE"
-    });
-
+    this.keys = this.input.keyboard.addKeys({ up:'W', down:'S', left:'A', right:'D', interact:'E', attack:'SPACE' });
     this.createHUD();
     this.createControls();
   }
 
-  createPlayerAnims() {
-    this.anims.create({
-      key: "walk_down",
-      frames: this.anims.generateFrameNumbers("donny", { start: 0, end: 7 }),
-      frameRate: 8,
-      repeat: -1
-    });
-
-    this.anims.create({
-      key: "walk_right",
-      frames: this.anims.generateFrameNumbers("donny", { start: 8, end: 15 }),
-      frameRate: 8,
-      repeat: -1
-    });
-
-    this.anims.create({
-      key: "walk_left",
-      frames: this.anims.generateFrameNumbers("donny", { start: 16, end: 23 }),
-      frameRate: 8,
-      repeat: -1
-    });
-
-    this.anims.create({
-      key: "walk_up",
-      frames: this.anims.generateFrameNumbers("donny", { start: 24, end: 31 }),
-      frameRate: 8,
-      repeat: -1
-    });
-
-    this.anims.create({
-      key: "punch_down",
-      frames: this.anims.generateFrameNumbers("donny_punch", { start: 0, end: 5 }),
-      frameRate: 14,
-      repeat: 0
-    });
-
-    this.anims.create({
-      key: "punch_right",
-      frames: this.anims.generateFrameNumbers("donny_punch", { start: 6, end: 11 }),
-      frameRate: 14,
-      repeat: 0
-    });
-
-    this.anims.create({
-      key: "punch_left",
-      frames: this.anims.generateFrameNumbers("donny_punch", { start: 12, end: 17 }),
-      frameRate: 14,
-      repeat: 0
-    });
-
-    this.anims.create({
-      key: "punch_up",
-      frames: this.anims.generateFrameNumbers("donny_punch", { start: 18, end: 23 }),
-      frameRate: 14,
-      repeat: 0
-    });
-  }
-
-  createZombieAnims() {
-    // Uploaded zombie sheets are 6 columns x 4 rows, 256x256 per cell.
-    // Walk sheet rows:
-    // 0 = down/front, 1 = right-side, 2 = up/back, 3 = unused/backup.
-    // Left reuses right-side frames with flipX.
-    this.anims.create({
-      key: "farmer_walk_down",
-      frames: this.anims.generateFrameNumbers("farmer_walk", { start: 0, end: 5 }),
-      frameRate: 7,
-      repeat: -1
-    });
-
-    this.anims.create({
-      key: "farmer_walk_right",
-      frames: this.anims.generateFrameNumbers("farmer_walk", { start: 6, end: 11 }),
-      frameRate: 7,
-      repeat: -1
-    });
-
-    this.anims.create({
-      key: "farmer_walk_left",
-      frames: this.anims.generateFrameNumbers("farmer_walk", { start: 6, end: 11 }),
-      frameRate: 7,
-      repeat: -1
-    });
-
-    this.anims.create({
-      key: "farmer_walk_up",
-      frames: this.anims.generateFrameNumbers("farmer_walk", { start: 12, end: 17 }),
-      frameRate: 7,
-      repeat: -1
-    });
-
-    // Attack sheet is also 6 columns x 4 rows.
-    this.anims.create({
-      key: "farmer_attack_down",
-      frames: this.anims.generateFrameNumbers("farmer_attack", { start: 0, end: 5 }),
-      frameRate: 10,
-      repeat: 0
-    });
-
-    this.anims.create({
-      key: "farmer_attack_right",
-      frames: this.anims.generateFrameNumbers("farmer_attack", { start: 6, end: 11 }),
-      frameRate: 10,
-      repeat: 0
-    });
-
-    this.anims.create({
-      key: "farmer_attack_left",
-      frames: this.anims.generateFrameNumbers("farmer_attack", { start: 6, end: 11 }),
-      frameRate: 10,
-      repeat: 0
-    });
-
-    this.anims.create({
-      key: "farmer_attack_up",
-      frames: this.anims.generateFrameNumbers("farmer_attack", { start: 18, end: 23 }),
-      frameRate: 10,
-      repeat: 0
-    });
-
-    // KO uses first row for the collapse.
-    this.anims.create({
-      key: "farmer_ko",
-      frames: this.anims.generateFrameNumbers("farmer_ko", { start: 0, end: 5 }),
-      frameRate: 7,
-      repeat: 0
-    });
-  }
-
-  makeMap() {
-    // v0.2.2 tile-based Main Street.
-    // road_tiles.png is a 32x32, 8x8 tileset.
-    this.map = this.make.tilemap({
-      tileWidth: 32,
-      tileHeight: 32,
-      width: 75,
-      height: 45
-    });
-
-    const tiles = this.map.addTilesetImage("road_tiles", "road_tiles", 32, 32, 0, 0);
-    const ground = this.map.createBlankLayer("ground", tiles, 0, 0);
-
-    // Tile index guide for the current road_tiles_32x32 sheet:
-    // 0-15: asphalt / lane markings
-    // 16-23: parking / road markings
-    // 24-31: sidewalk / dark pavement details
-    // 32-47: gravel / dirt / shoulder
-    // 48-63: grass / weeds / rural path
-    const ASPHALT = 0;
-    const ASPHALT_DARK = 1;
-    const YELLOW_LINE = 2;
-    const DASHED_YELLOW = 3;
-    const WHITE_LINE = 4;
-    const SIDEWALK = 24;
-    const SIDEWALK_CRACKED = 25;
-    const GRAVEL = 32;
-    const DIRT = 41;
-    const GRASS = 48;
-    const GRASS_DARK = 49;
-    const TALL_GRASS = 50;
-    const PATH = 53;
-
-    // Base grass.
-    ground.fill(GRASS);
-
-    // Add subtle rural variation so the grass is not flat.
-    for (let y = 0; y < 45; y++) {
-      for (let x = 0; x < 75; x++) {
-        const n = (x * 17 + y * 31) % 19;
-        if (n === 0) ground.putTileAt(GRASS_DARK, x, y);
-        if (n === 5) ground.putTileAt(TALL_GRASS, x, y);
-      }
-    }
-
-    // North and south corn/field strips.
-    for (let x = 0; x < 75; x++) {
-      ground.putTileAt(TALL_GRASS, x, 0);
-      ground.putTileAt(TALL_GRASS, x, 1);
-      ground.putTileAt(GRASS_DARK, x, 2);
-      ground.putTileAt(TALL_GRASS, x, 42);
-      ground.putTileAt(TALL_GRASS, x, 43);
-      ground.putTileAt(GRASS_DARK, x, 44);
-    }
-
-    // Main Street road: y 17-27.
-    for (let y = 17; y <= 27; y++) {
-      for (let x = 0; x < 75; x++) {
-        ground.putTileAt((x + y) % 9 === 0 ? ASPHALT_DARK : ASPHALT, x, y);
-      }
-    }
-
-    // Sidewalks / shoulders above and below road.
-    for (let x = 0; x < 75; x++) {
-      ground.putTileAt(SIDEWALK, x, 15);
-      ground.putTileAt(SIDEWALK_CRACKED, x, 16);
-      ground.putTileAt(SIDEWALK_CRACKED, x, 28);
-      ground.putTileAt(SIDEWALK, x, 29);
-    }
-
-    // Gravel shoulders leading to building fronts.
-    for (let x = 0; x < 75; x++) {
-      ground.putTileAt(GRAVEL, x, 14);
-      ground.putTileAt(GRAVEL, x, 30);
-    }
-
-    // Broken yellow center line.
-    for (let x = 0; x < 75; x += 7) {
-      ground.putTileAt(DASHED_YELLOW, x, 22);
-      ground.putTileAt(DASHED_YELLOW, x + 1, 22);
-      ground.putTileAt(YELLOW_LINE, x + 2, 22);
-    }
-
-    // Driveway/path details.
-    const driveways = [8, 21, 36, 50, 64];
-    for (const dx of driveways) {
-      for (let y = 14; y <= 16; y++) ground.putTileAt(DIRT, dx, y);
-      for (let y = 28; y <= 30; y++) ground.putTileAt(DIRT, dx, y);
-    }
-    for (let y = 30; y < 42; y++) ground.putTileAt(PATH, 15, y);
-    for (let y = 30; y < 42; y++) ground.putTileAt(PATH, 43, y);
-
-    // Buildings remain separate sprites/objects so collision stays simple.
-    this.makeBuilding(250, 260, 300, 220, "GAS");
-    this.makeBuilding(680, 260, 330, 220, "DINER");
-
-    this.autoShopSprite = this.add.image(1150, 280, "auto_shop");
-    this.autoShopSprite.setDisplaySize(650, 310);
-
-    // Invisible solid collision box for the Auto Shop.
-    // This blocks the wall/roof area but leaves the door area reachable.
-    this.autoShopBlocker = this.add.rectangle(1150, 275, 610, 215, 0xff0000, 0);
-    this.physics.add.existing(this.autoShopBlocker, true);
-
-    this.add.rectangle(1150, 430, 76, 48, 0x111111);
-
-    this.makeBuilding(1600, 260, 330, 220, "BAR");
-    this.makeBuilding(2050, 260, 360, 220, "MOTEL");
-
-    this.makeBuilding(350, 1140, 360, 220, "HOUSE");
-    this.makeBuilding(850, 1140, 360, 220, "STORE");
-    this.makeBuilding(1350, 1140, 420, 220, "CLINIC");
-    this.makeBuilding(1900, 1140, 420, 220, "POLICE");
-  }
-
-  makeBuilding(x, y, w, h, label) {
-    this.add.rectangle(x, y, w, h, 0x4b4b4b);
-    this.add.rectangle(x, y - h / 2 + 20, w, 40, 0x222222);
-    this.add.rectangle(x, y + h / 2 - 18, 54, 36, 0x111111);
-
-    this.add.text(x, y - 5, label, {
-      fontSize: "24px",
-      color: "#ffffff",
-      fontFamily: "Arial"
-    }).setOrigin(0.5);
-  }
-
-  createHUD() {
-    this.missionText = this.add.text(20, 20, "Talk To Jim", {
-      fontSize: "24px",
-      color: "#ffff00",
-      fontFamily: "Arial"
-    }).setScrollFactor(0).setDepth(1000);
-
-    this.resourceText = this.add.text(20, 58, "", {
-      fontSize: "18px",
-      color: "#ffffff",
-      fontFamily: "Arial"
-    }).setScrollFactor(0).setDepth(1000);
-
-    this.clockText = this.add.text(1040, 20, "", {
-      fontSize: "20px",
-      color: "#ffffff",
-      fontFamily: "Arial"
-    }).setScrollFactor(0).setDepth(1000);
-
-    this.tipText = this.add.text(20, 160, "Move: left stick / WASD   Talk: A / E   Attack: X / Space", {
-      fontSize: "15px",
-      color: "#dddddd",
-      fontFamily: "Arial"
-    }).setScrollFactor(0).setDepth(1000);
-
-    this.versionText = this.add.text(20, 675, "v0.2.2 - Tilemap Main Street", {
-      fontSize: "14px",
-      color: "#bbbbbb",
-      fontFamily: "Arial"
-    }).setScrollFactor(0).setDepth(1000);
-  }
-
-  createControls() {
-    this.stickBase = this.add.circle(135, 585, 70, 0x000000, 0.42)
-      .setScrollFactor(0)
-      .setDepth(1000);
-
-    this.stickKnob = this.add.circle(135, 585, 32, 0xffffff, 0.45)
-      .setScrollFactor(0)
-      .setDepth(1001);
-
-    this.stickHome = { x: 135, y: 585 };
-    this.stickTouchId = null;
-
-    this.makeButton(1120, 505, "Y", "y");
-    this.makeButton(1060, 575, "X", "x");
-    this.makeButton(1180, 575, "B", "b");
-    this.makeButton(1120, 645, "A", "a");
-
-    this.add.text(1060, 650, "SELECT", {
-      fontSize: "13px",
-      color: "#ffffff",
-      fontFamily: "Arial"
-    }).setOrigin(0.5).setScrollFactor(0).setDepth(1001);
-
-    this.add.text(1190, 650, "START", {
-      fontSize: "13px",
-      color: "#ffffff",
-      fontFamily: "Arial"
-    }).setOrigin(0.5).setScrollFactor(0).setDepth(1001);
-  }
-
-  makeButton(x, y, label, key) {
-    const btn = this.add.circle(x, y, 38, 0x333333, 0.72)
-      .setInteractive()
-      .setScrollFactor(0)
-      .setDepth(1000);
-
-    this.add.text(x, y, label, {
-      fontSize: "24px",
-      color: "#ffffff",
-      fontFamily: "Arial"
-    }).setOrigin(0.5).setScrollFactor(0).setDepth(1001);
-
-    btn.on("pointerdown", () => {
-      this.mobile[key] = true;
-
-      if (key === "a") this.tryInteract();
-      if (key === "x") this.attack();
-    });
-
-    btn.on("pointerup", () => {
-      this.mobile[key] = false;
-    });
-
-    btn.on("pointerout", () => {
-      this.mobile[key] = false;
-    });
-  }
-
-  handleVirtualStick() {
-    let found = false;
-
-    for (const p of this.input.manager.pointers) {
-      if (!p || !p.isDown) continue;
-
-      if (p.x < 480) {
-        found = true;
-
-        if (this.stickTouchId === null) {
-          this.stickTouchId = p.id;
-          this.stickHome.x = p.x;
-          this.stickHome.y = p.y;
-          this.stickBase.x = p.x;
-          this.stickBase.y = p.y;
-        }
-
-        if (this.stickTouchId === p.id) {
-          const dx = p.x - this.stickHome.x;
-          const dy = p.y - this.stickHome.y;
-
-          this.mobile.left = dx < -18;
-          this.mobile.right = dx > 18;
-          this.mobile.up = dy < -18;
-          this.mobile.down = dy > 18;
-
-          const dist = Math.min(48, Math.sqrt(dx * dx + dy * dy));
-          const angle = Math.atan2(dy, dx);
-
-          this.stickKnob.x = this.stickHome.x + Math.cos(angle) * dist;
-          this.stickKnob.y = this.stickHome.y + Math.sin(angle) * dist;
-        }
-      }
-    }
-
-    if (!found) {
-      this.stickTouchId = null;
-      this.mobile.left = false;
-      this.mobile.right = false;
-      this.mobile.up = false;
-      this.mobile.down = false;
-
-      this.stickHome.x = 135;
-      this.stickHome.y = 585;
-
-      this.stickBase.x = 135;
-      this.stickBase.y = 585;
-      this.stickKnob.x = 135;
-      this.stickKnob.y = 585;
-    }
-  }
-
-  tryInteract() {
-    const distToJim = Phaser.Math.Distance.Between(
-      this.player.x,
-      this.player.y,
-      this.jim.x,
-      this.jim.y
-    );
-
-    if (distToJim < 140 && !this.jimFollowing && !this.safehouseUnlocked) {
-      this.jimFollowing = true;
-      this.missionText.setText("Escort Jim To Auto Shop");
-    }
-  }
-
-  attack() {
-    if (this.attackCooldown) return;
-
-    this.attackCooldown = true;
-
-    this.time.delayedCall(350, () => {
-      this.attackCooldown = false;
-    });
-
-    this.isAttacking = true;
-    this.player.setTexture("donny_punch");
-    this.player.anims.play("punch_" + this.facing, true);
-
-    this.player.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
-      this.isAttacking = false;
-      this.player.setTexture("donny");
-    });
-
-    const slash = this.add.circle(this.player.x, this.player.y, 80, 0xffffff, 0.18);
-    this.time.delayedCall(120, () => slash.destroy());
-
-    if (this.zombie && this.zombie.active && !this.zombieDead) {
-      const d = Phaser.Math.Distance.Between(
-        this.player.x,
-        this.player.y,
-        this.zombie.x,
-        this.zombie.y
-      );
-
-      if (d < 120) {
-        this.zombie.hp -= 25;
-        this.zombie.setTint(0x99ff99);
-
-        this.time.delayedCall(100, () => {
-          if (this.zombie && this.zombie.active) {
-            this.zombie.clearTint();
-          }
-        });
-
-        if (this.zombie.hp <= 0) {
-          this.killZombie();
-        }
-      }
-    }
-  }
-
-  killZombie() {
-    this.zombieDead = true;
-    this.zombie.setVelocity(0, 0);
-    this.zombie.play("farmer_ko", true);
-
-    if (this.zombieLabel) {
-      this.zombieLabel.destroy();
-    }
-
-    this.missionText.setText("Zombie Down - Help Jim");
-
-    this.zombie.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
-      this.zombie.anims.stop();
-      this.zombie.setFrame(5);
-    });
-  }
-
-  updateZombie() {
-    if (!this.zombie || !this.zombie.active || this.zombieDead) return;
-
-    const zombieDist = Phaser.Math.Distance.Between(
-      this.zombie.x,
-      this.zombie.y,
-      this.player.x,
-      this.player.y
-    );
-
-    if (zombieDist < 600) {
-      const angle = Phaser.Math.Angle.Between(
-        this.zombie.x,
-        this.zombie.y,
-        this.player.x,
-        this.player.y
-      );
-
-      this.zombie.x += Math.cos(angle) * 0.9;
-      this.zombie.y += Math.sin(angle) * 0.9;
-
-      const dx = this.player.x - this.zombie.x;
-      const dy = this.player.y - this.zombie.y;
-
-      if (Math.abs(dx) > Math.abs(dy)) {
-        this.zombieLastDir = dx > 0 ? "right" : "left";
-      } else {
-        this.zombieLastDir = dy > 0 ? "down" : "up";
-      }
-
-      if (this.zombieLastDir === "left") {
-        this.zombie.setFlipX(true);
-        this.zombie.anims.play("farmer_walk_left", true);
-      } else {
-        this.zombie.setFlipX(false);
-        this.zombie.anims.play("farmer_walk_" + this.zombieLastDir, true);
-      }
+  textureExists(key){ return this.textures.exists(key); }
+
+  createPlayer(){
+    if (!this.textureExists('donny')) {
+      showError('Missing Donny walk sheet. Using fallback rectangle.');
+      this.player = this.physics.add.sprite(1200,720).setSize(40,60).setDisplaySize(40,60);
+      this.playerFallback = this.add.rectangle(1200,720,40,60,0x00ff00);
     } else {
-      this.zombie.anims.stop();
+      this.player = this.physics.add.sprite(1200,720,'donny',0);
+      this.player.setScale(1.15);
+      this.createPlayerAnims();
     }
+    this.player.setCollideWorldBounds(true);
+    this.cameras.main.startFollow(this.player,true,0.08,0.08);
+  }
 
-    if (this.zombieLabel) {
-      this.zombieLabel.x = this.zombie.x - 55;
-      this.zombieLabel.y = this.zombie.y - 70;
+  createPlayerAnims(){
+    this.anims.create({ key:'walk_down', frames:this.anims.generateFrameNumbers('donny',{start:0,end:7}), frameRate:8, repeat:-1 });
+    this.anims.create({ key:'walk_right', frames:this.anims.generateFrameNumbers('donny',{start:8,end:15}), frameRate:8, repeat:-1 });
+    this.anims.create({ key:'walk_left', frames:this.anims.generateFrameNumbers('donny',{start:16,end:23}), frameRate:8, repeat:-1 });
+    this.anims.create({ key:'walk_up', frames:this.anims.generateFrameNumbers('donny',{start:24,end:31}), frameRate:8, repeat:-1 });
+    if (this.textureExists('donny_punch')) {
+      this.anims.create({ key:'punch_down', frames:this.anims.generateFrameNumbers('donny_punch',{start:0,end:5}), frameRate:14, repeat:0 });
+      this.anims.create({ key:'punch_right', frames:this.anims.generateFrameNumbers('donny_punch',{start:6,end:11}), frameRate:14, repeat:0 });
+      this.anims.create({ key:'punch_left', frames:this.anims.generateFrameNumbers('donny_punch',{start:12,end:17}), frameRate:14, repeat:0 });
+      this.anims.create({ key:'punch_up', frames:this.anims.generateFrameNumbers('donny_punch',{start:18,end:23}), frameRate:14, repeat:0 });
     }
   }
 
-  update() {
+  makeMap(){
+    if (this.textureExists('road_tiles')) {
+      const map = this.make.tilemap({ tileWidth:32, tileHeight:32, width:75, height:45 });
+      const tiles = map.addTilesetImage('road_tiles');
+      const layer = map.createBlankLayer('ground', tiles);
+      layer.fill(25); // grass-ish tile from uploaded sheet
+      for (let y=15; y<=28; y++) for (let x=0; x<75; x++) layer.putTileAt(0,x,y); // road/asphalt
+      for (let x=0; x<75; x+=6) { layer.putTileAt(3,x,22); layer.putTileAt(3,x+1,22); }
+      for (let x=0; x<75; x++) { layer.putTileAt(10,x,14); layer.putTileAt(10,x,29); }
+    } else {
+      showError('Missing road_tiles.png. Using fallback rectangle map.');
+      this.add.rectangle(1200,700,2400,1400,0x34552d);
+      this.add.rectangle(1200,700,2400,320,0x2c2c2c);
+      this.add.rectangle(1200,520,2400,42,0x666666);
+      this.add.rectangle(1200,880,2400,42,0x666666);
+      for (let x=0; x<2500; x+=220) this.add.rectangle(x,700,110,12,0xd9bd4c);
+    }
+
+    this.makeBuilding(250,260,300,220,'GAS');
+    this.makeBuilding(680,260,330,220,'DINER');
+
+    if (this.textureExists('auto_shop')) {
+      this.autoShopSprite = this.add.image(1150,280,'auto_shop');
+      this.autoShopSprite.setDisplaySize(650,310);
+    } else {
+      this.makeBuilding(1150,260,360,220,'AUTO SHOP');
+    }
+    this.autoShopBlocker = this.add.rectangle(1150,275,610,215,0xff0000,0);
+    this.physics.add.existing(this.autoShopBlocker,true);
+    this.add.rectangle(1150,430,76,48,0x111111);
+
+    this.makeBuilding(1600,260,330,220,'BAR');
+    this.makeBuilding(2050,260,360,220,'MOTEL');
+    this.makeBuilding(350,1140,360,220,'HOUSE');
+    this.makeBuilding(850,1140,360,220,'STORE');
+    this.makeBuilding(1350,1140,420,220,'CLINIC');
+    this.makeBuilding(1900,1140,420,220,'POLICE');
+  }
+
+  makeBuilding(x,y,w,h,label){
+    this.add.rectangle(x,y,w,h,0x4b4b4b);
+    this.add.rectangle(x,y-h/2+20,w,40,0x222222);
+    this.add.rectangle(x,y+h/2-18,54,36,0x111111);
+    this.add.text(x,y-5,label,{fontSize:'24px',color:'#fff',fontFamily:'Arial'}).setOrigin(.5);
+  }
+
+  createNPCs(){
+    this.jim = this.add.rectangle(1030,500,42,62,0x00ffff);
+    this.jimLabel = this.add.text(1005,450,'JIM',{fontSize:'18px',color:'#fff',fontFamily:'Arial'});
+    this.safehouse = this.add.rectangle(1150,250,260,180,0x00ff00,0.18);
+  }
+
+  createZombie(){
+    if (this.textureExists('farmer_walk')) {
+      this.zombie = this.physics.add.sprite(350,1180,'farmer_walk',0);
+      this.zombie.setScale(0.28);
+      this.anims.create({ key:'farmer_walk_simple', frames:this.anims.generateFrameNumbers('farmer_walk',{start:0,end:7}), frameRate:7, repeat:-1 });
+      this.anims.create({ key:'farmer_ko_simple', frames:this.anims.generateFrameNumbers('farmer_ko',{start:0,end:7}), frameRate:7, repeat:0 });
+    } else {
+      showError('Missing farmer_walker_walk.png. Using fallback zombie rectangle.');
+      this.zombie = this.physics.add.sprite(350,1180).setSize(44,66).setDisplaySize(44,66);
+      this.zombieFallback = this.add.rectangle(350,1180,44,66,0x4d8b3a);
+    }
+    this.zombie.setCollideWorldBounds(true);
+    this.zombie.hp = 100;
+    this.zombieLabel = this.add.text(295,1130,'FARMER WALKER',{fontSize:'15px',color:'#d6ffd6',fontFamily:'Arial'});
+  }
+
+  createHUD(){
+    this.missionText=this.add.text(20,20,'Talk To Jim',{fontSize:'24px',color:'#ffff00',fontFamily:'Arial'}).setScrollFactor(0).setDepth(1000);
+    this.resourceText=this.add.text(20,58,'',{fontSize:'18px',color:'#fff',fontFamily:'Arial'}).setScrollFactor(0).setDepth(1000);
+    this.clockText=this.add.text(1040,20,'',{fontSize:'20px',color:'#fff',fontFamily:'Arial'}).setScrollFactor(0).setDepth(1000);
+    this.tipText=this.add.text(20,160,'Move: left stick / WASD   Talk: A / E   Attack: X / Space',{fontSize:'15px',color:'#ddd',fontFamily:'Arial'}).setScrollFactor(0).setDepth(1000);
+    this.versionText=this.add.text(20,675,'v0.2.4 - Safe Debug Recovery',{fontSize:'14px',color:'#bbb',fontFamily:'Arial'}).setScrollFactor(0).setDepth(1000);
+  }
+
+  createControls(){
+    this.stickBase=this.add.circle(135,585,70,0x000000,0.42).setScrollFactor(0).setDepth(1000);
+    this.stickKnob=this.add.circle(135,585,32,0xffffff,0.45).setScrollFactor(0).setDepth(1001);
+    this.stickHome={x:135,y:585}; this.stickTouchId=null;
+    this.makeButton(1120,505,'Y','y'); this.makeButton(1060,575,'X','x'); this.makeButton(1180,575,'B','b'); this.makeButton(1120,645,'A','a');
+    this.add.text(1060,650,'SELECT',{fontSize:'13px',color:'#fff',fontFamily:'Arial'}).setOrigin(.5).setScrollFactor(0).setDepth(1001);
+    this.add.text(1190,650,'START',{fontSize:'13px',color:'#fff',fontFamily:'Arial'}).setOrigin(.5).setScrollFactor(0).setDepth(1001);
+  }
+
+  makeButton(x,y,label,key){
+    const btn=this.add.circle(x,y,38,0x333333,0.72).setInteractive().setScrollFactor(0).setDepth(1000);
+    this.add.text(x,y,label,{fontSize:'24px',color:'#fff',fontFamily:'Arial'}).setOrigin(.5).setScrollFactor(0).setDepth(1001);
+    btn.on('pointerdown',()=>{ this.mobile[key]=true; if(key==='a')this.tryInteract(); if(key==='x')this.attack(); });
+    btn.on('pointerup',()=>{ this.mobile[key]=false; });
+    btn.on('pointerout',()=>{ this.mobile[key]=false; });
+  }
+
+  handleVirtualStick(){
+    let found=false;
+    for(const p of this.input.manager.pointers){
+      if(!p||!p.isDown) continue;
+      if(p.x<480){ found=true; if(this.stickTouchId===null){ this.stickTouchId=p.id; this.stickHome.x=p.x; this.stickHome.y=p.y; this.stickBase.x=p.x; this.stickBase.y=p.y; }
+        if(this.stickTouchId===p.id){ const dx=p.x-this.stickHome.x, dy=p.y-this.stickHome.y; this.mobile.left=dx<-18; this.mobile.right=dx>18; this.mobile.up=dy<-18; this.mobile.down=dy>18; const dist=Math.min(48,Math.hypot(dx,dy)); const angle=Math.atan2(dy,dx); this.stickKnob.x=this.stickHome.x+Math.cos(angle)*dist; this.stickKnob.y=this.stickHome.y+Math.sin(angle)*dist; }
+      }
+    }
+    if(!found){ this.stickTouchId=null; this.mobile.left=this.mobile.right=this.mobile.up=this.mobile.down=false; this.stickHome.x=135; this.stickHome.y=585; this.stickBase.x=135; this.stickBase.y=585; this.stickKnob.x=135; this.stickKnob.y=585; }
+  }
+
+  tryInteract(){
+    const d=Phaser.Math.Distance.Between(this.player.x,this.player.y,this.jim.x,this.jim.y);
+    if(d<140&&!this.jimFollowing&&!this.safehouseUnlocked){ this.jimFollowing=true; this.missionText.setText('Escort Jim To Auto Shop'); }
+  }
+
+  attack(){
+    if(this.attackCooldown) return; this.attackCooldown=true; this.time.delayedCall(350,()=>this.attackCooldown=false);
+    if(this.textureExists('donny_punch') && this.player.texture.key !== '__DEFAULT'){
+      this.isAttacking=true; this.player.setTexture('donny_punch'); this.player.anims.play('punch_'+this.facing,true);
+      this.player.once(Phaser.Animations.Events.ANIMATION_COMPLETE,()=>{this.isAttacking=false; this.player.setTexture('donny');});
+    }
+    const slash=this.add.circle(this.player.x,this.player.y,80,0xffffff,0.18); this.time.delayedCall(120,()=>slash.destroy());
+    if(this.zombie&&this.zombie.active&&!this.zombieDead){
+      const d=Phaser.Math.Distance.Between(this.player.x,this.player.y,this.zombie.x,this.zombie.y);
+      if(d<120){ this.zombie.hp-=25; this.zombie.setTint?.(0x99ff99); this.time.delayedCall(100,()=>this.zombie?.clearTint?.()); if(this.zombie.hp<=0) this.killZombie(); }
+    }
+  }
+
+  killZombie(){
+    this.zombieDead=true; this.zombie.setVelocity(0,0);
+    if(this.textureExists('farmer_ko')){ this.zombie.play('farmer_ko_simple',true); this.zombie.once(Phaser.Animations.Events.ANIMATION_COMPLETE,()=>this.zombie.anims.stop()); }
+    else { this.zombie.destroy(); if(this.zombieFallback) this.zombieFallback.destroy(); }
+    if(this.zombieLabel) this.zombieLabel.destroy();
+    this.missionText.setText('Zombie Down - Help Jim');
+  }
+
+  updateZombie(){
+    if(!this.zombie||!this.zombie.active||this.zombieDead) return;
+    const d=Phaser.Math.Distance.Between(this.zombie.x,this.zombie.y,this.player.x,this.player.y);
+    if(d<600){ const a=Phaser.Math.Angle.Between(this.zombie.x,this.zombie.y,this.player.x,this.player.y); this.zombie.x+=Math.cos(a)*0.9; this.zombie.y+=Math.sin(a)*0.9; if(this.textureExists('farmer_walk')){ this.zombie.setFlipX(this.player.x<this.zombie.x); this.zombie.anims.play('farmer_walk_simple',true); } }
+    else if(this.zombie.anims) this.zombie.anims.stop();
+    if(this.zombieFallback){ this.zombieFallback.x=this.zombie.x; this.zombieFallback.y=this.zombie.y; }
+    if(this.zombieLabel){ this.zombieLabel.x=this.zombie.x-55; this.zombieLabel.y=this.zombie.y-70; }
+  }
+
+  update(){
     this.handleVirtualStick();
-
-    if (Phaser.Input.Keyboard.JustDown(this.keys.interact)) {
-      this.tryInteract();
-    }
-
-    if (Phaser.Input.Keyboard.JustDown(this.keys.attack)) {
-      this.attack();
-    }
-
-    const speed = 240;
-    this.player.setVelocity(0);
-
-    const left = this.keys.left.isDown || this.mobile.left;
-    const right = this.keys.right.isDown || this.mobile.right;
-    const up = this.keys.up.isDown || this.mobile.up;
-    const down = this.keys.down.isDown || this.mobile.down;
-
-    if (left) this.player.setVelocityX(-speed);
-    if (right) this.player.setVelocityX(speed);
-    if (up) this.player.setVelocityY(-speed);
-    if (down) this.player.setVelocityY(speed);
-
+    if(Phaser.Input.Keyboard.JustDown(this.keys.interact)) this.tryInteract();
+    if(Phaser.Input.Keyboard.JustDown(this.keys.attack)) this.attack();
+    const speed=240; this.player.setVelocity(0);
+    const left=this.keys.left.isDown||this.mobile.left, right=this.keys.right.isDown||this.mobile.right, up=this.keys.up.isDown||this.mobile.up, down=this.keys.down.isDown||this.mobile.down;
+    if(left)this.player.setVelocityX(-speed); if(right)this.player.setVelocityX(speed); if(up)this.player.setVelocityY(-speed); if(down)this.player.setVelocityY(speed);
     this.player.body.velocity.normalize().scale(speed);
-
-    if (this.autoShopBlocker) {
-      this.physics.collide(this.player, this.autoShopBlocker);
-    }
-
-    if (left) this.facing = "left";
-    else if (right) this.facing = "right";
-    else if (up) this.facing = "up";
-    else if (down) this.facing = "down";
-
-    if (!this.isAttacking) {
-      if (left) {
-        this.player.anims.play("walk_left", true);
-      } else if (right) {
-        this.player.anims.play("walk_right", true);
-      } else if (up) {
-        this.player.anims.play("walk_up", true);
-      } else if (down) {
-        this.player.anims.play("walk_down", true);
-      } else {
-        this.player.anims.stop();
-      }
-    }
-
+    if(this.autoShopBlocker) this.physics.collide(this.player,this.autoShopBlocker);
+    if(left)this.facing='left'; else if(right)this.facing='right'; else if(up)this.facing='up'; else if(down)this.facing='down';
+    if(this.playerFallback){ this.playerFallback.x=this.player.x; this.playerFallback.y=this.player.y; }
+    if(!this.isAttacking && this.textureExists('donny')){ if(left)this.player.anims.play('walk_left',true); else if(right)this.player.anims.play('walk_right',true); else if(up)this.player.anims.play('walk_up',true); else if(down)this.player.anims.play('walk_down',true); else this.player.anims.stop(); }
     this.updateZombie();
-
-    if (this.jimFollowing && !this.safehouseUnlocked) {
-      const dist = Phaser.Math.Distance.Between(this.jim.x, this.jim.y, this.player.x, this.player.y);
-
-      if (dist > 90) {
-        const angle = Phaser.Math.Angle.Between(this.jim.x, this.jim.y, this.player.x, this.player.y);
-        this.jim.x += Math.cos(angle) * 2.0;
-        this.jim.y += Math.sin(angle) * 2.0;
-      }
-
-      this.jimLabel.x = this.jim.x - 25;
-      this.jimLabel.y = this.jim.y - 50;
-
-      const safeDist = Phaser.Math.Distance.Between(this.jim.x, this.jim.y, 1150, 250);
-
-      if (safeDist < 120) {
-        this.safehouseUnlocked = true;
-        this.jimFollowing = false;
-
-        this.food += 3;
-        this.medicine += 1;
-        this.wood += 5;
-        this.survivors = 1;
-
-        this.missionText.setText("AUTO SHOP SECURED");
-      }
-    }
-
-    this.minutes += 0.03;
-
-    if (this.minutes >= 1440) {
-      this.minutes = 0;
-      this.day += 1;
-    }
-
-    const h = Math.floor(this.minutes / 60).toString().padStart(2, "0");
-    const m = Math.floor(this.minutes % 60).toString().padStart(2, "0");
-
-    this.clockText.setText("Day " + this.day + "  " + h + ":" + m);
-
-    this.resourceText.setText(
-      "Food: " + this.food +
-      "\nMedicine: " + this.medicine +
-      "\nWood: " + this.wood +
-      "\nSurvivors: " + this.survivors
-    );
+    if(this.jimFollowing&&!this.safehouseUnlocked){ const d=Phaser.Math.Distance.Between(this.jim.x,this.jim.y,this.player.x,this.player.y); if(d>90){ const a=Phaser.Math.Angle.Between(this.jim.x,this.jim.y,this.player.x,this.player.y); this.jim.x+=Math.cos(a)*2; this.jim.y+=Math.sin(a)*2; } this.jimLabel.x=this.jim.x-25; this.jimLabel.y=this.jim.y-50; const safe=Phaser.Math.Distance.Between(this.jim.x,this.jim.y,1150,250); if(safe<120){ this.safehouseUnlocked=true; this.jimFollowing=false; this.food+=3; this.medicine+=1; this.wood+=5; this.survivors=1; this.missionText.setText('AUTO SHOP SECURED'); } }
+    this.minutes+=0.03; if(this.minutes>=1440){this.minutes=0; this.day++;} const h=Math.floor(this.minutes/60).toString().padStart(2,'0'); const m=Math.floor(this.minutes%60).toString().padStart(2,'0'); this.clockText.setText('Day '+this.day+'  '+h+':'+m); this.resourceText.setText('Food: '+this.food+'\nMedicine: '+this.medicine+'\nWood: '+this.wood+'\nSurvivors: '+this.survivors);
   }
 }
 
-const config = {
-  type: Phaser.AUTO,
-  width: 1280,
-  height: 720,
-  backgroundColor: "#111111",
-  parent: document.body,
-  physics: {
-    default: "arcade",
-    arcade: {
-      debug: false
-    }
-  },
-  scale: {
-    mode: Phaser.Scale.FIT,
-    autoCenter: Phaser.Scale.CENTER_BOTH,
-    width: 1280,
-    height: 720
-  },
-  scene: [MainStreetScene]
-};
-
+const config={ type:Phaser.AUTO, width:1280, height:720, backgroundColor:'#111111', parent:document.body, physics:{default:'arcade',arcade:{debug:false}}, scale:{mode:Phaser.Scale.FIT, autoCenter:Phaser.Scale.CENTER_BOTH, width:1280, height:720}, scene:[MainStreetScene] };
 new Phaser.Game(config);
 </script>
 </body>
