@@ -96,6 +96,9 @@ class MainStreetScene extends Phaser.Scene {
     this.facing = "down";
     this.isAttacking = false;
 
+    // Solid world objects for Main Street props/building collision.
+    this.solidObjects = this.physics.add.staticGroup();
+
     this.makeMap();
 
     this.player = this.physics.add.sprite(1200, 720, "donny", 0);
@@ -363,19 +366,50 @@ class MainStreetScene extends Phaser.Scene {
     for (let y = 30; y < 42; y++) ground.putTileAt(PATH, 15, y);
     for (let y = 30; y < 42; y++) ground.putTileAt(PATH, 43, y);
 
+    // Auto Shop parking/service lot tiles.
+    for (let y = 7; y <= 14; y++) {
+      for (let x = 29; x <= 45; x++) {
+        ground.putTileAt((x + y) % 5 === 0 ? ASPHALT_DARK : ASPHALT, x, y);
+      }
+    }
+    for (let x = 31; x <= 43; x += 4) {
+      ground.putTileAt(WHITE_LINE, x, 13);
+      ground.putTileAt(WHITE_LINE, x, 14);
+    }
+
     // Buildings remain separate sprites/objects so collision stays simple.
     this.makeBuilding(250, 260, 300, 220, "GAS");
     this.makeBuilding(680, 260, 330, 220, "DINER");
 
-    this.autoShopSprite = this.add.image(1150, 280, "auto_shop");
-    this.autoShopSprite.setDisplaySize(650, 310);
+    // Main Street landmark: Auto Shop safehouse exterior.
+    this.autoShopSprite = this.add.image(1150, 260, "auto_shop");
+    this.autoShopSprite.setDisplaySize(720, 340);
 
-    // Invisible solid collision box for the Auto Shop.
-    // This blocks the wall/roof area but leaves the door area reachable.
-    this.autoShopBlocker = this.add.rectangle(1150, 275, 610, 215, 0xff0000, 0);
+    // Invisible solid collision box for the Auto Shop wall/roof.
+    // Lower door/garage area stays reachable for future interior trigger.
+    this.autoShopBlocker = this.add.rectangle(1150, 245, 680, 220, 0xff0000, 0);
     this.physics.add.existing(this.autoShopBlocker, true);
 
-    this.add.rectangle(1150, 430, 76, 48, 0x111111);
+    // Garage/entry marker.
+    this.add.rectangle(1150, 430, 86, 52, 0x111111);
+
+    // Auto Shop exterior props.
+    this.makeSolidProp(820, 420, 80, 48, 0x202020, "TIRES");
+    this.makeSolidProp(930, 430, 74, 40, 0x5a4a2f, "SCRAP");
+    this.makeSolidProp(1465, 420, 94, 54, 0x263626, "DUMP");
+    this.makeSolidProp(1015, 438, 58, 38, 0x70431d, "TOOLS");
+
+    // Service-yard fence pieces, split so the door path is open.
+    this.makeSolidProp(850, 480, 250, 16, 0x2a2a2a, "");
+    this.makeSolidProp(1450, 480, 250, 16, 0x2a2a2a, "");
+    this.makeSolidProp(720, 355, 16, 250, 0x2a2a2a, "");
+    this.makeSolidProp(1580, 355, 16, 250, 0x2a2a2a, "");
+
+    this.add.text(1150, 78, "AUTO SHOP SAFEHOUSE", {
+      fontSize: "22px",
+      color: "#e6e6e6",
+      fontFamily: "Arial"
+    }).setOrigin(0.5);
 
     this.makeBuilding(1600, 260, 330, 220, "BAR");
     this.makeBuilding(2050, 260, 360, 220, "MOTEL");
@@ -396,6 +430,25 @@ class MainStreetScene extends Phaser.Scene {
       color: "#ffffff",
       fontFamily: "Arial"
     }).setOrigin(0.5);
+  }
+
+  makeSolidProp(x, y, w, h, color, label) {
+    const prop = this.add.rectangle(x, y, w, h, color, 0.95);
+    this.physics.add.existing(prop, true);
+
+    if (this.solidObjects) {
+      this.solidObjects.add(prop);
+    }
+
+    if (label) {
+      this.add.text(x, y, label, {
+        fontSize: "11px",
+        color: "#ffffff",
+        fontFamily: "Arial"
+      }).setOrigin(0.5);
+    }
+
+    return prop;
   }
 
   createHUD() {
@@ -423,7 +476,7 @@ class MainStreetScene extends Phaser.Scene {
       fontFamily: "Arial"
     }).setScrollFactor(0).setDepth(1000);
 
-    this.versionText = this.add.text(20, 675, "v0.2.2 - Tilemap Main Street", {
+    this.versionText = this.add.text(20, 675, "v0.2.3 - Auto Shop Exterior", {
       fontSize: "14px",
       color: "#bbbbbb",
       fontFamily: "Arial"
@@ -692,6 +745,10 @@ class MainStreetScene extends Phaser.Scene {
 
     if (this.autoShopBlocker) {
       this.physics.collide(this.player, this.autoShopBlocker);
+    }
+
+    if (this.solidObjects) {
+      this.physics.collide(this.player, this.solidObjects);
     }
 
     if (left) this.facing = "left";
