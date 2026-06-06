@@ -31,29 +31,31 @@ class MainStreetScene extends Phaser.Scene {
   }
 
   preload() {
-    this.load.spritesheet("donny", "assets/characters/donny_walk_4dir_128x128_phaser.png?v=021", {
+    this.load.spritesheet("donny", "assets/characters/donny_walk_4dir_128x128_phaser.png", {
       frameWidth: 128,
       frameHeight: 128
     });
 
-    this.load.spritesheet("donny_punch", "assets/characters/donny_punch_4dir_128x128_phaser.png?v=021", {
+    this.load.spritesheet("donny_punch", "assets/characters/donny_punch_4dir_128x128_phaser.png", {
       frameWidth: 128,
       frameHeight: 128
     });
 
-    this.load.image("auto_shop", "assets/buildings/auto_shop.png?v=021");
+    this.load.image("auto_shop", "assets/buildings/auto_shop.png");
 
-    this.load.spritesheet("farmer_walk", "assets/zombies/farmer_walker_walk.png?v=021", {
+    this.load.image("road_tiles", "assets/tiles/road_tiles.png?v=022");
+
+    this.load.spritesheet("farmer_walk", "assets/zombies/farmer_walker_walk.png", {
       frameWidth: 256,
       frameHeight: 256
     });
 
-    this.load.spritesheet("farmer_attack", "assets/zombies/farmer_walker_attack.png?v=021", {
+    this.load.spritesheet("farmer_attack", "assets/zombies/farmer_walker_attack.png", {
       frameWidth: 256,
       frameHeight: 256
     });
 
-    this.load.spritesheet("farmer_ko", "assets/zombies/farmer_walker_ko.png?v=021", {
+    this.load.spritesheet("farmer_ko", "assets/zombies/farmer_walker_ko.png", {
       frameWidth: 256,
       frameHeight: 256
     });
@@ -199,48 +201,169 @@ class MainStreetScene extends Phaser.Scene {
   }
 
   createZombieAnims() {
-    // v0.2.1 single-row zombie sheets:
-    // Each zombie sheet should be 2048x256.
-    // 8 frames total, each frame is 256x256.
-    // The zombie uses one walking direction and flips left/right.
+    // Uploaded zombie sheets are 6 columns x 4 rows, 256x256 per cell.
+    // Walk sheet rows:
+    // 0 = down/front, 1 = right-side, 2 = up/back, 3 = unused/backup.
+    // Left reuses right-side frames with flipX.
     this.anims.create({
-      key: "farmer_walk",
-      frames: this.anims.generateFrameNumbers("farmer_walk", { start: 0, end: 7 }),
+      key: "farmer_walk_down",
+      frames: this.anims.generateFrameNumbers("farmer_walk", { start: 0, end: 5 }),
       frameRate: 7,
       repeat: -1
     });
 
     this.anims.create({
-      key: "farmer_attack",
-      frames: this.anims.generateFrameNumbers("farmer_attack", { start: 0, end: 7 }),
+      key: "farmer_walk_right",
+      frames: this.anims.generateFrameNumbers("farmer_walk", { start: 6, end: 11 }),
+      frameRate: 7,
+      repeat: -1
+    });
+
+    this.anims.create({
+      key: "farmer_walk_left",
+      frames: this.anims.generateFrameNumbers("farmer_walk", { start: 6, end: 11 }),
+      frameRate: 7,
+      repeat: -1
+    });
+
+    this.anims.create({
+      key: "farmer_walk_up",
+      frames: this.anims.generateFrameNumbers("farmer_walk", { start: 12, end: 17 }),
+      frameRate: 7,
+      repeat: -1
+    });
+
+    // Attack sheet is also 6 columns x 4 rows.
+    this.anims.create({
+      key: "farmer_attack_down",
+      frames: this.anims.generateFrameNumbers("farmer_attack", { start: 0, end: 5 }),
       frameRate: 10,
       repeat: 0
     });
 
     this.anims.create({
+      key: "farmer_attack_right",
+      frames: this.anims.generateFrameNumbers("farmer_attack", { start: 6, end: 11 }),
+      frameRate: 10,
+      repeat: 0
+    });
+
+    this.anims.create({
+      key: "farmer_attack_left",
+      frames: this.anims.generateFrameNumbers("farmer_attack", { start: 6, end: 11 }),
+      frameRate: 10,
+      repeat: 0
+    });
+
+    this.anims.create({
+      key: "farmer_attack_up",
+      frames: this.anims.generateFrameNumbers("farmer_attack", { start: 18, end: 23 }),
+      frameRate: 10,
+      repeat: 0
+    });
+
+    // KO uses first row for the collapse.
+    this.anims.create({
       key: "farmer_ko",
-      frames: this.anims.generateFrameNumbers("farmer_ko", { start: 0, end: 7 }),
+      frames: this.anims.generateFrameNumbers("farmer_ko", { start: 0, end: 5 }),
       frameRate: 7,
       repeat: 0
     });
   }
 
   makeMap() {
-    this.add.rectangle(1200, 700, 2400, 1400, 0x34552d);
+    // v0.2.2 tile-based Main Street.
+    // road_tiles.png is a 32x32, 8x8 tileset.
+    this.map = this.make.tilemap({
+      tileWidth: 32,
+      tileHeight: 32,
+      width: 75,
+      height: 45
+    });
 
-    for (let x = 0; x < 2400; x += 40) {
-      this.add.rectangle(x, 70, 18, 120, 0x9b8a2d);
-      this.add.rectangle(x + 20, 1330, 18, 120, 0x9b8a2d);
+    const tiles = this.map.addTilesetImage("road_tiles", "road_tiles", 32, 32, 0, 0);
+    const ground = this.map.createBlankLayer("ground", tiles, 0, 0);
+
+    // Tile index guide for the current road_tiles_32x32 sheet:
+    // 0-15: asphalt / lane markings
+    // 16-23: parking / road markings
+    // 24-31: sidewalk / dark pavement details
+    // 32-47: gravel / dirt / shoulder
+    // 48-63: grass / weeds / rural path
+    const ASPHALT = 0;
+    const ASPHALT_DARK = 1;
+    const YELLOW_LINE = 2;
+    const DASHED_YELLOW = 3;
+    const WHITE_LINE = 4;
+    const SIDEWALK = 24;
+    const SIDEWALK_CRACKED = 25;
+    const GRAVEL = 32;
+    const DIRT = 41;
+    const GRASS = 48;
+    const GRASS_DARK = 49;
+    const TALL_GRASS = 50;
+    const PATH = 53;
+
+    // Base grass.
+    ground.fill(GRASS);
+
+    // Add subtle rural variation so the grass is not flat.
+    for (let y = 0; y < 45; y++) {
+      for (let x = 0; x < 75; x++) {
+        const n = (x * 17 + y * 31) % 19;
+        if (n === 0) ground.putTileAt(GRASS_DARK, x, y);
+        if (n === 5) ground.putTileAt(TALL_GRASS, x, y);
+      }
     }
 
-    this.add.rectangle(1200, 700, 2400, 320, 0x2c2c2c);
-    this.add.rectangle(1200, 520, 2400, 42, 0x666666);
-    this.add.rectangle(1200, 880, 2400, 42, 0x666666);
-
-    for (let x = 0; x < 2500; x += 220) {
-      this.add.rectangle(x, 700, 110, 12, 0xd9bd4c);
+    // North and south corn/field strips.
+    for (let x = 0; x < 75; x++) {
+      ground.putTileAt(TALL_GRASS, x, 0);
+      ground.putTileAt(TALL_GRASS, x, 1);
+      ground.putTileAt(GRASS_DARK, x, 2);
+      ground.putTileAt(TALL_GRASS, x, 42);
+      ground.putTileAt(TALL_GRASS, x, 43);
+      ground.putTileAt(GRASS_DARK, x, 44);
     }
 
+    // Main Street road: y 17-27.
+    for (let y = 17; y <= 27; y++) {
+      for (let x = 0; x < 75; x++) {
+        ground.putTileAt((x + y) % 9 === 0 ? ASPHALT_DARK : ASPHALT, x, y);
+      }
+    }
+
+    // Sidewalks / shoulders above and below road.
+    for (let x = 0; x < 75; x++) {
+      ground.putTileAt(SIDEWALK, x, 15);
+      ground.putTileAt(SIDEWALK_CRACKED, x, 16);
+      ground.putTileAt(SIDEWALK_CRACKED, x, 28);
+      ground.putTileAt(SIDEWALK, x, 29);
+    }
+
+    // Gravel shoulders leading to building fronts.
+    for (let x = 0; x < 75; x++) {
+      ground.putTileAt(GRAVEL, x, 14);
+      ground.putTileAt(GRAVEL, x, 30);
+    }
+
+    // Broken yellow center line.
+    for (let x = 0; x < 75; x += 7) {
+      ground.putTileAt(DASHED_YELLOW, x, 22);
+      ground.putTileAt(DASHED_YELLOW, x + 1, 22);
+      ground.putTileAt(YELLOW_LINE, x + 2, 22);
+    }
+
+    // Driveway/path details.
+    const driveways = [8, 21, 36, 50, 64];
+    for (const dx of driveways) {
+      for (let y = 14; y <= 16; y++) ground.putTileAt(DIRT, dx, y);
+      for (let y = 28; y <= 30; y++) ground.putTileAt(DIRT, dx, y);
+    }
+    for (let y = 30; y < 42; y++) ground.putTileAt(PATH, 15, y);
+    for (let y = 30; y < 42; y++) ground.putTileAt(PATH, 43, y);
+
+    // Buildings remain separate sprites/objects so collision stays simple.
     this.makeBuilding(250, 260, 300, 220, "GAS");
     this.makeBuilding(680, 260, 330, 220, "DINER");
 
@@ -300,7 +423,7 @@ class MainStreetScene extends Phaser.Scene {
       fontFamily: "Arial"
     }).setScrollFactor(0).setDepth(1000);
 
-    this.versionText = this.add.text(20, 675, "v0.2.1 - Single Row Zombie Sheets", {
+    this.versionText = this.add.text(20, 675, "v0.2.2 - Tilemap Main Street", {
       fontSize: "14px",
       color: "#bbbbbb",
       fontFamily: "Arial"
@@ -490,7 +613,7 @@ class MainStreetScene extends Phaser.Scene {
 
     this.zombie.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
       this.zombie.anims.stop();
-      this.zombie.setFrame(7);
+      this.zombie.setFrame(5);
     });
   }
 
@@ -516,16 +639,21 @@ class MainStreetScene extends Phaser.Scene {
       this.zombie.y += Math.sin(angle) * 0.9;
 
       const dx = this.player.x - this.zombie.x;
+      const dy = this.player.y - this.zombie.y;
 
-      // Single-row zombie sheet faces right by default.
-      // Flip it when chasing left.
-      if (dx < 0) {
-        this.zombie.setFlipX(true);
+      if (Math.abs(dx) > Math.abs(dy)) {
+        this.zombieLastDir = dx > 0 ? "right" : "left";
       } else {
-        this.zombie.setFlipX(false);
+        this.zombieLastDir = dy > 0 ? "down" : "up";
       }
 
-      this.zombie.anims.play("farmer_walk", true);
+      if (this.zombieLastDir === "left") {
+        this.zombie.setFlipX(true);
+        this.zombie.anims.play("farmer_walk_left", true);
+      } else {
+        this.zombie.setFlipX(false);
+        this.zombie.anims.play("farmer_walk_" + this.zombieLastDir, true);
+      }
     } else {
       this.zombie.anims.stop();
     }
