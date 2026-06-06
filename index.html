@@ -288,9 +288,15 @@ class MainStreetScene extends Phaser.Scene {
     this.makeBuilding(250, 260, 300, 220, "GAS");
     this.makeBuilding(680, 260, 330, 220, "DINER");
 
-    this.autoShopSprite = this.add.image(1150, 275, "auto_shop");
-    this.autoShopSprite.setDisplaySize(520, 250);
-    this.add.rectangle(1150, 385, 66, 44, 0x111111);
+    this.autoShopSprite = this.add.image(1150, 280, "auto_shop");
+    this.autoShopSprite.setDisplaySize(650, 310);
+
+    // Invisible solid collision box for the Auto Shop.
+    // This blocks the wall/roof area but leaves the door area reachable.
+    this.autoShopBlocker = this.add.rectangle(1150, 275, 610, 215, 0xff0000, 0);
+    this.physics.add.existing(this.autoShopBlocker, true);
+
+    this.add.rectangle(1150, 430, 76, 48, 0x111111);
 
     this.makeBuilding(1600, 260, 330, 220, "BAR");
     this.makeBuilding(2050, 260, 360, 220, "MOTEL");
@@ -338,7 +344,7 @@ class MainStreetScene extends Phaser.Scene {
       fontFamily: "Arial"
     }).setScrollFactor(0).setDepth(1000);
 
-    this.versionText = this.add.text(20, 675, "v0.1.5 - Donny Punch + Zombie Frames", {
+    this.versionText = this.add.text(20, 675, "v0.1.6 - Solid Auto Shop", {
       fontSize: "14px",
       color: "#bbbbbb",
       fontFamily: "Arial"
@@ -604,6 +610,10 @@ class MainStreetScene extends Phaser.Scene {
     if (down) this.player.setVelocityY(speed);
 
     this.player.body.velocity.normalize().scale(speed);
+
+    if (this.autoShopBlocker) {
+      this.physics.collide(this.player, this.autoShopBlocker);
+    }
 
     if (left) this.facing = "left";
     else if (right) this.facing = "right";
