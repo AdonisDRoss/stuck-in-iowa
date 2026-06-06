@@ -1,0 +1,9 @@
+{
+  "files": [
+    "index.html",
+    "assets/characters/donny_walk_4dir_128x128_phaser.png",
+    "assets/characters/donny_punch_4dir_128x128_phaser.png",
+    "assets/buildings/auto_shop.png",
+    "assets/tiles/road_tiles_32x32.png"
+  ]
+}
