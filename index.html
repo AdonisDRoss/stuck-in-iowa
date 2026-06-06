@@ -108,7 +108,7 @@ class MainStreetScene extends Phaser.Scene {
     this.cameras.main.startFollow(this.player, true, 0.08, 0.08);
 
     this.createPlayerAnims();
-    this.createZombieAnims();
+    // Zombie animations disabled: using row 1, frame 1 placeholder.
 
     this.jim = this.add.rectangle(1030, 500, 42, 62, 0x00ffff);
     this.jimLabel = this.add.text(1005, 450, "JIM", {
@@ -119,8 +119,10 @@ class MainStreetScene extends Phaser.Scene {
 
     this.safehouse = this.add.rectangle(1150, 250, 260, 180, 0x00ff00, 0.18);
 
+    // Stable placeholder: use row 1, frame 1 from farmer_walker_walk.png.
     this.zombie = this.physics.add.sprite(350, 1180, "farmer_walk", 0);
-    this.zombie.setScale(0.42);
+    this.zombie.setFrame(0);
+    this.zombie.setScale(0.62);
     this.zombie.setCollideWorldBounds(true);
     this.zombie.body.setSize(95, 130);
     this.zombie.body.setOffset(80, 90);
@@ -476,7 +478,7 @@ class MainStreetScene extends Phaser.Scene {
       fontFamily: "Arial"
     }).setScrollFactor(0).setDepth(1000);
 
-    this.versionText = this.add.text(20, 675, "v0.2.5 - Tile Path Fix", {
+    this.versionText = this.add.text(20, 675, "v0.2.7 - Zombie Frame 0 Placeholder", {
       fontSize: "14px",
       color: "#bbbbbb",
       fontFamily: "Arial"
@@ -656,18 +658,15 @@ class MainStreetScene extends Phaser.Scene {
   killZombie() {
     this.zombieDead = true;
     this.zombie.setVelocity(0, 0);
-    this.zombie.play("farmer_ko", true);
+    this.zombie.setTint(0x777777);
+    this.zombie.setAngle(90);
+    this.zombie.setScale(0.55);
 
     if (this.zombieLabel) {
       this.zombieLabel.destroy();
     }
 
     this.missionText.setText("Zombie Down - Help Jim");
-
-    this.zombie.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
-      this.zombie.anims.stop();
-      this.zombie.setFrame(5);
-    });
   }
 
   updateZombie() {
@@ -702,14 +701,14 @@ class MainStreetScene extends Phaser.Scene {
 
       if (this.zombieLastDir === "left") {
         this.zombie.setFlipX(true);
-        this.zombie.anims.play("farmer_walk_left", true);
-      } else {
+      } else if (this.zombieLastDir === "right") {
         this.zombie.setFlipX(false);
-        this.zombie.anims.play("farmer_walk_" + this.zombieLastDir, true);
       }
-    } else {
-      this.zombie.anims.stop();
     }
+
+    // Force row 1, frame 1 placeholder every frame.
+    this.zombie.setTexture("farmer_walk");
+    this.zombie.setFrame(0);
 
     if (this.zombieLabel) {
       this.zombieLabel.x = this.zombie.x - 55;
