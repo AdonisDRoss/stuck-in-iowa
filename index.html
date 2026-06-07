@@ -80,10 +80,6 @@ class BaseScene extends Phaser.Scene {
     make("punch_right", "donny_punch", 6, 11, 14, 0);
     make("punch_left", "donny_punch", 6, 11, 14, 0);
     make("punch_up", "donny_punch", 18, 23, 14, 0);
-    make("shoot_up", "donny_shoot", 0, 7, 12, 0);
-    make("shoot_right", "donny_shoot", 8, 15, 12, 0);
-    make("shoot_left", "donny_shoot", 8, 15, 12, 0);
-    make("shoot_down", "donny_shoot", 16, 23, 12, 0);
   }
 
   createHUD(versionText) {
@@ -99,7 +95,7 @@ class BaseScene extends Phaser.Scene {
       fontSize: "20px", color: "#ffffff", fontFamily: "Arial"
     }).setScrollFactor(0).setDepth(1000);
 
-    this.tipText = this.add.text(20, 160, "Move: left stick / WASD   Talk: A / E   Attack: X / Space", {
+    this.tipText = this.add.text(20, 160, "Move: left stick / WASD   Talk: A / E   Attack: X / Space   Shoot: B / F", {
       fontSize: "15px", color: "#dddddd", fontFamily: "Arial"
     }).setScrollFactor(0).setDepth(1000);
 
@@ -357,8 +353,8 @@ class BaseScene extends Phaser.Scene {
     if (!this.textures.exists("pistol") || !this.player) return;
     this.pistolSprite = this.add.image(this.player.x, this.player.y, "pistol");
     this.pistolSprite.setVisible(false);
-    this.pistolSprite.setScale(0.055);
-    this.pistolSprite.setDepth(999);
+    this.pistolSprite.setScale(0.22);
+    this.pistolSprite.setDepth(2001);
   }
 
   togglePistolEquip() {
@@ -371,21 +367,15 @@ class BaseScene extends Phaser.Scene {
     this.isShooting = true;
     this.isAttacking = true;
 
-    const hasShootSheet = this.textures.exists("donny_shoot") && this.anims.exists("shoot_" + this.facing);
-    if (hasShootSheet) {
-      this.player.setTexture("donny_shoot");
-      this.player.setFlipX(this.facing === "left");
-      this.player.anims.play("shoot_" + this.facing, true);
-    } else {
-      // Fallback keeps pistol visible even if the shooting sheet has not been uploaded yet.
-      this.player.setFlipX(this.facing === "left");
-      this.player.anims.stop();
-    }
+    // Use Donny's punch sheet for shooting so we do not need a separate shoot sheet.
+    this.player.setTexture("donny_punch");
+    this.player.setFlipX(this.facing === "left");
+    this.player.anims.play("punch_" + this.facing, true);
     this.updatePistolOverlay(true);
 
-    const bx = this.player.x + (this.facing === "left" ? -80 : this.facing === "right" ? 80 : 0);
-    const by = this.player.y + (this.facing === "up" ? -80 : this.facing === "down" ? 80 : 0);
-    const flash = this.add.circle(bx, by, 10, 0xffcc33, 0.65).setDepth(2000);
+    const bx = this.player.x + (this.facing === "left" ? -78 : this.facing === "right" ? 78 : 0);
+    const by = this.player.y + (this.facing === "up" ? -78 : this.facing === "down" ? 58 : -10);
+    const flash = this.add.circle(bx, by, 8, 0xffcc33, 0.65).setDepth(2002);
     this.time.delayedCall(70, () => flash.destroy());
 
     const finishShot = () => {
@@ -393,23 +383,19 @@ class BaseScene extends Phaser.Scene {
       this.isAttacking = false;
       this.player.setTexture("donny");
       this.player.setFlipX(false);
-      this.updatePistolOverlay(false);
+      this.updatePistolOverlay(GameState.pistolEquipped);
     };
 
-    if (hasShootSheet) {
-      this.player.once(Phaser.Animations.Events.ANIMATION_COMPLETE, finishShot);
-    } else {
-      this.time.delayedCall(180, finishShot);
-    }
+    this.player.once(Phaser.Animations.Events.ANIMATION_COMPLETE, finishShot);
   }
 
-  updatePistolOverlay(show = GameState.pistolEquipped && GameState.isShooting) {
+  updatePistolOverlay(show = GameState.pistolEquipped) {
     if (!this.pistolSprite || !this.player) return;
     const offsets = {
-      right: { x: 43, y: -18, angle: 0, flipX: false, scale: 0.055 },
-      left:  { x: -43, y: -18, angle: 0, flipX: true,  scale: 0.055 },
-      up:    { x: 12, y: -46, angle: -90, flipX: false, scale: 0.052 },
-      down:  { x: 16, y: 24, angle: 90, flipX: false, scale: 0.052 }
+      right: { x: 48, y: -17, angle: 0, flipX: false, scale: 0.22 },
+      left:  { x: -48, y: -17, angle: 0, flipX: true,  scale: 0.22 },
+      up:    { x: 13, y: -50, angle: -90, flipX: false, scale: 0.20 },
+      down:  { x: 18, y: 16, angle: 90, flipX: false, scale: 0.20 }
     };
     const o = offsets[this.facing] || offsets.right;
     this.pistolSprite.setVisible(show);
@@ -418,7 +404,7 @@ class BaseScene extends Phaser.Scene {
     this.pistolSprite.setAngle(o.angle);
     this.pistolSprite.setFlipX(o.flipX);
     this.pistolSprite.setScale(o.scale);
-    this.pistolSprite.setDepth(this.player.depth + 1);
+    this.pistolSprite.setDepth(2001);
   }
 
   handlePlayerMovement(colliders) {
@@ -442,7 +428,7 @@ class BaseScene extends Phaser.Scene {
       else if (down) this.player.anims.play("walk_down", true);
       else this.player.anims.stop();
     }
-    this.updatePistolOverlay(GameState.pistolEquipped && this.isShooting);
+    this.updatePistolOverlay(GameState.pistolEquipped);
   }
 
   attack() {
@@ -487,8 +473,7 @@ class MainStreetScene extends BaseScene {
     });
     this.load.spritesheet("donny", "assets/characters/donny_walk_4dir_128x128_phaser.png?v=030", { frameWidth: 128, frameHeight: 128 });
     this.load.spritesheet("donny_punch", "assets/characters/donny_punch_4dir_128x128_phaser.png?v=030", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("donny_shoot", "assets/characters/donny_shoot_empty_128x128.png?v=038", { frameWidth: 128, frameHeight: 128 });
-    this.load.image("pistol", "assets/weapons/pistol.png?v=038");
+    this.load.image("pistol", "assets/weapons/pistol.png?v=039");
     this.load.image("auto_shop", "assets/buildings/auto_shop.png?v=030");
     this.load.image("auto_repair_sign", "assets/signs/auto_repair_sign.png?v=038");
     this.load.image("road_tiles", "assets/tiles/road_tiles_32x32.png?v=033");
@@ -754,8 +739,7 @@ class AutoShopInteriorScene extends BaseScene {
     });
     this.load.spritesheet("donny", "assets/characters/donny_walk_4dir_128x128_phaser.png?v=030", { frameWidth: 128, frameHeight: 128 });
     this.load.spritesheet("donny_punch", "assets/characters/donny_punch_4dir_128x128_phaser.png?v=030", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("donny_shoot", "assets/characters/donny_shoot_empty_128x128.png?v=038", { frameWidth: 128, frameHeight: 128 });
-    this.load.image("pistol", "assets/weapons/pistol.png?v=038");
+    this.load.image("pistol", "assets/weapons/pistol.png?v=039");
     this.load.image("auto_shop_interior_bg", "assets/interiors/auto_shop_empty_interior.png?v=034");
     this.load.image("auto_shop_interior_props", "assets/props/auto_shop_interior_props.png?v=038");
     this.load.audio("bg_music", "assets/audio/Grain Silo Ghosts.mp3?v=033");
@@ -769,7 +753,7 @@ class AutoShopInteriorScene extends BaseScene {
     this.createPlayer(640, 560);
     this.createPlayerAnims();
     this.keys = this.input.keyboard.addKeys({ up:"W", down:"S", left:"A", right:"D", interact:"E", attack:"SPACE", shoot:"F", pause:"P", music:"M" });
-    this.createHUD("v0.3.7 - Interior + Pistol Equip");
+    this.createHUD("v0.3.9 - Punch Shooting + Visible Pistol");
     this.createControls();
     this.ensureMusic();
     this.input.once("pointerdown", () => this.ensureMusic(true));
