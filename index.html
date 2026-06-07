@@ -4,9 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>Stuck In Iowa: Dead County</title>
-
 <script src="https://cdn.jsdelivr.net/npm/phaser@3.80.1/dist/phaser.min.js"></script>
-
 <style>
 html, body {
   margin: 0;
@@ -22,536 +20,130 @@ canvas {
 }
 </style>
 </head>
-
 <body>
 <script>
-class MainStreetScene extends Phaser.Scene {
-  constructor() {
-    super("MainStreetScene");
-  }
+const GameState = {
+  food: 5,
+  medicine: 2,
+  wood: 8,
+  survivors: 0,
+  day: 1,
+  minutes: 8 * 60,
+  mission: "Talk To Jim",
+  talkedToJim: false,
+  zombieDead: false,
+  wrenchFound: false,
+  returnedWrench: false,
+  jimFollowing: false,
+  safehouseUnlocked: false,
+  inventory: []
+};
 
-  preload() {
-    this.load.spritesheet("donny", "assets/characters/donny_walk_4dir_128x128_phaser.png", {
-      frameWidth: 128,
-      frameHeight: 128
-    });
-
-    this.load.spritesheet("donny_punch", "assets/characters/donny_punch_4dir_128x128_phaser.png", {
-      frameWidth: 128,
-      frameHeight: 128
-    });
-
-    this.load.image("auto_shop", "assets/buildings/auto_shop.png");
-
-    this.load.image("road_tiles", "assets/tiles/road_tiles_32x32.png?v=025");
-
-    this.load.spritesheet("farmer_walk", "assets/zombies/farmer_walker_walk.png", {
-      frameWidth: 256,
-      frameHeight: 256
-    });
-
-    this.load.spritesheet("farmer_attack", "assets/zombies/farmer_walker_attack.png", {
-      frameWidth: 256,
-      frameHeight: 256
-    });
-
-    this.load.spritesheet("farmer_ko", "assets/zombies/farmer_walker_ko.png", {
-      frameWidth: 256,
-      frameHeight: 256
-    });
-  }
-
-  create() {
+class BaseScene extends Phaser.Scene {
+  setupMobile() {
     this.input.addPointer(5);
-
-    this.worldW = 2400;
-    this.worldH = 1400;
-
-    this.physics.world.setBounds(0, 0, this.worldW, this.worldH);
-    this.cameras.main.setBounds(0, 0, this.worldW, this.worldH);
-
-    this.mobile = {
-      left: false,
-      right: false,
-      up: false,
-      down: false,
-      a: false,
-      b: false,
-      x: false,
-      y: false
-    };
-
-    this.food = 5;
-    this.medicine = 2;
-    this.wood = 8;
-    this.survivors = 0;
-    this.jimFollowing = false;
-    this.safehouseUnlocked = false;
-    this.attackCooldown = false;
-    this.day = 1;
-    this.minutes = 8 * 60;
-    this.zombieDead = false;
-    this.zombieAttacking = false;
-    this.zombieLastDir = "down";
-    this.facing = "down";
+    this.mobile = { left:false, right:false, up:false, down:false, a:false, b:false, x:false, y:false };
+    this.facing = this.facing || "down";
     this.isAttacking = false;
+    this.attackCooldown = false;
+  }
 
-    // Solid world objects for Main Street props/building collision.
-    this.solidObjects = this.physics.add.staticGroup();
-
-    this.makeMap();
-
-    this.player = this.physics.add.sprite(1200, 720, "donny", 0);
+  createPlayer(x, y) {
+    this.player = this.physics.add.sprite(x, y, "donny", 0);
     this.player.setCollideWorldBounds(true);
     this.player.setScale(1.15);
-
+    this.player.body.setSize(42, 44);
+    this.player.body.setOffset(43, 70);
     this.cameras.main.startFollow(this.player, true, 0.08, 0.08);
-
-    this.createPlayerAnims();
-    // Zombie animations disabled: using row 1, frame 1 placeholder.
-
-    this.jim = this.add.rectangle(1030, 500, 42, 62, 0x00ffff);
-    this.jimLabel = this.add.text(1005, 450, "JIM", {
-      fontSize: "18px",
-      color: "#ffffff",
-      fontFamily: "Arial"
-    });
-
-    this.safehouse = this.add.rectangle(1150, 250, 260, 180, 0x00ff00, 0.18);
-
-    // Stable placeholder: use row 1, frame 1 from farmer_walker_walk.png.
-    this.zombie = this.physics.add.sprite(350, 1180, "farmer_walk", 0);
-    this.zombie.setFrame(0);
-    this.zombie.setScale(0.62);
-    this.zombie.setCollideWorldBounds(true);
-    this.zombie.body.setSize(95, 130);
-    this.zombie.body.setOffset(80, 90);
-    this.zombie.hp = 100;
-
-    this.zombieLabel = this.add.text(295, 1130, "FARMER WALKER", {
-      fontSize: "15px",
-      color: "#d6ffd6",
-      fontFamily: "Arial"
-    });
-
-    this.keys = this.input.keyboard.addKeys({
-      up: "W",
-      down: "S",
-      left: "A",
-      right: "D",
-      interact: "E",
-      attack: "SPACE"
-    });
-
-    this.createHUD();
-    this.createControls();
   }
 
   createPlayerAnims() {
-    this.anims.create({
-      key: "walk_down",
-      frames: this.anims.generateFrameNumbers("donny", { start: 0, end: 7 }),
-      frameRate: 8,
-      repeat: -1
-    });
-
-    this.anims.create({
-      key: "walk_right",
-      frames: this.anims.generateFrameNumbers("donny", { start: 8, end: 15 }),
-      frameRate: 8,
-      repeat: -1
-    });
-
-    this.anims.create({
-      key: "walk_left",
-      frames: this.anims.generateFrameNumbers("donny", { start: 16, end: 23 }),
-      frameRate: 8,
-      repeat: -1
-    });
-
-    this.anims.create({
-      key: "walk_up",
-      frames: this.anims.generateFrameNumbers("donny", { start: 24, end: 31 }),
-      frameRate: 8,
-      repeat: -1
-    });
-
-    this.anims.create({
-      key: "punch_down",
-      frames: this.anims.generateFrameNumbers("donny_punch", { start: 0, end: 5 }),
-      frameRate: 14,
-      repeat: 0
-    });
-
-    this.anims.create({
-      key: "punch_right",
-      frames: this.anims.generateFrameNumbers("donny_punch", { start: 6, end: 11 }),
-      frameRate: 14,
-      repeat: 0
-    });
-
-    this.anims.create({
-      key: "punch_left",
-      frames: this.anims.generateFrameNumbers("donny_punch", { start: 12, end: 17 }),
-      frameRate: 14,
-      repeat: 0
-    });
-
-    this.anims.create({
-      key: "punch_up",
-      frames: this.anims.generateFrameNumbers("donny_punch", { start: 18, end: 23 }),
-      frameRate: 14,
-      repeat: 0
-    });
-  }
-
-  createZombieAnims() {
-    // Uploaded zombie sheets are 6 columns x 4 rows, 256x256 per cell.
-    // Walk sheet rows:
-    // 0 = down/front, 1 = right-side, 2 = up/back, 3 = unused/backup.
-    // Left reuses right-side frames with flipX.
-    this.anims.create({
-      key: "farmer_walk_down",
-      frames: this.anims.generateFrameNumbers("farmer_walk", { start: 0, end: 5 }),
-      frameRate: 7,
-      repeat: -1
-    });
-
-    this.anims.create({
-      key: "farmer_walk_right",
-      frames: this.anims.generateFrameNumbers("farmer_walk", { start: 6, end: 11 }),
-      frameRate: 7,
-      repeat: -1
-    });
-
-    this.anims.create({
-      key: "farmer_walk_left",
-      frames: this.anims.generateFrameNumbers("farmer_walk", { start: 6, end: 11 }),
-      frameRate: 7,
-      repeat: -1
-    });
-
-    this.anims.create({
-      key: "farmer_walk_up",
-      frames: this.anims.generateFrameNumbers("farmer_walk", { start: 12, end: 17 }),
-      frameRate: 7,
-      repeat: -1
-    });
-
-    // Attack sheet is also 6 columns x 4 rows.
-    this.anims.create({
-      key: "farmer_attack_down",
-      frames: this.anims.generateFrameNumbers("farmer_attack", { start: 0, end: 5 }),
-      frameRate: 10,
-      repeat: 0
-    });
-
-    this.anims.create({
-      key: "farmer_attack_right",
-      frames: this.anims.generateFrameNumbers("farmer_attack", { start: 6, end: 11 }),
-      frameRate: 10,
-      repeat: 0
-    });
-
-    this.anims.create({
-      key: "farmer_attack_left",
-      frames: this.anims.generateFrameNumbers("farmer_attack", { start: 6, end: 11 }),
-      frameRate: 10,
-      repeat: 0
-    });
-
-    this.anims.create({
-      key: "farmer_attack_up",
-      frames: this.anims.generateFrameNumbers("farmer_attack", { start: 18, end: 23 }),
-      frameRate: 10,
-      repeat: 0
-    });
-
-    // KO uses first row for the collapse.
-    this.anims.create({
-      key: "farmer_ko",
-      frames: this.anims.generateFrameNumbers("farmer_ko", { start: 0, end: 5 }),
-      frameRate: 7,
-      repeat: 0
-    });
-  }
-
-  makeMap() {
-    // v0.2.2 tile-based Main Street.
-    // road_tiles.png is a 32x32, 8x8 tileset.
-    this.map = this.make.tilemap({
-      tileWidth: 32,
-      tileHeight: 32,
-      width: 75,
-      height: 45
-    });
-
-    const tiles = this.map.addTilesetImage("road_tiles", "road_tiles", 32, 32, 0, 0);
-    const ground = this.map.createBlankLayer("ground", tiles, 0, 0);
-
-    // Tile index guide for the current road_tiles_32x32 sheet:
-    // 0-15: asphalt / lane markings
-    // 16-23: parking / road markings
-    // 24-31: sidewalk / dark pavement details
-    // 32-47: gravel / dirt / shoulder
-    // 48-63: grass / weeds / rural path
-    const ASPHALT = 0;
-    const ASPHALT_DARK = 1;
-    const YELLOW_LINE = 2;
-    const DASHED_YELLOW = 3;
-    const WHITE_LINE = 4;
-    const SIDEWALK = 24;
-    const SIDEWALK_CRACKED = 25;
-    const GRAVEL = 32;
-    const DIRT = 41;
-    const GRASS = 48;
-    const GRASS_DARK = 49;
-    const TALL_GRASS = 50;
-    const PATH = 53;
-
-    // Base grass.
-    ground.fill(GRASS);
-
-    // Add subtle rural variation so the grass is not flat.
-    for (let y = 0; y < 45; y++) {
-      for (let x = 0; x < 75; x++) {
-        const n = (x * 17 + y * 31) % 19;
-        if (n === 0) ground.putTileAt(GRASS_DARK, x, y);
-        if (n === 5) ground.putTileAt(TALL_GRASS, x, y);
+    const make = (key, tex, start, end, rate, repeat) => {
+      if (!this.anims.exists(key)) {
+        this.anims.create({ key, frames: this.anims.generateFrameNumbers(tex, { start, end }), frameRate: rate, repeat });
       }
-    }
-
-    // North and south corn/field strips.
-    for (let x = 0; x < 75; x++) {
-      ground.putTileAt(TALL_GRASS, x, 0);
-      ground.putTileAt(TALL_GRASS, x, 1);
-      ground.putTileAt(GRASS_DARK, x, 2);
-      ground.putTileAt(TALL_GRASS, x, 42);
-      ground.putTileAt(TALL_GRASS, x, 43);
-      ground.putTileAt(GRASS_DARK, x, 44);
-    }
-
-    // Main Street road: y 17-27.
-    for (let y = 17; y <= 27; y++) {
-      for (let x = 0; x < 75; x++) {
-        ground.putTileAt((x + y) % 9 === 0 ? ASPHALT_DARK : ASPHALT, x, y);
-      }
-    }
-
-    // Sidewalks / shoulders above and below road.
-    for (let x = 0; x < 75; x++) {
-      ground.putTileAt(SIDEWALK, x, 15);
-      ground.putTileAt(SIDEWALK_CRACKED, x, 16);
-      ground.putTileAt(SIDEWALK_CRACKED, x, 28);
-      ground.putTileAt(SIDEWALK, x, 29);
-    }
-
-    // Gravel shoulders leading to building fronts.
-    for (let x = 0; x < 75; x++) {
-      ground.putTileAt(GRAVEL, x, 14);
-      ground.putTileAt(GRAVEL, x, 30);
-    }
-
-    // Broken yellow center line.
-    for (let x = 0; x < 75; x += 7) {
-      ground.putTileAt(DASHED_YELLOW, x, 22);
-      ground.putTileAt(DASHED_YELLOW, x + 1, 22);
-      ground.putTileAt(YELLOW_LINE, x + 2, 22);
-    }
-
-    // Driveway/path details.
-    const driveways = [8, 21, 36, 50, 64];
-    for (const dx of driveways) {
-      for (let y = 14; y <= 16; y++) ground.putTileAt(DIRT, dx, y);
-      for (let y = 28; y <= 30; y++) ground.putTileAt(DIRT, dx, y);
-    }
-    for (let y = 30; y < 42; y++) ground.putTileAt(PATH, 15, y);
-    for (let y = 30; y < 42; y++) ground.putTileAt(PATH, 43, y);
-
-    // Auto Shop parking/service lot tiles.
-    for (let y = 7; y <= 14; y++) {
-      for (let x = 29; x <= 45; x++) {
-        ground.putTileAt((x + y) % 5 === 0 ? ASPHALT_DARK : ASPHALT, x, y);
-      }
-    }
-    for (let x = 31; x <= 43; x += 4) {
-      ground.putTileAt(WHITE_LINE, x, 13);
-      ground.putTileAt(WHITE_LINE, x, 14);
-    }
-
-    // Buildings remain separate sprites/objects so collision stays simple.
-    this.makeBuilding(250, 260, 300, 220, "GAS");
-    this.makeBuilding(680, 260, 330, 220, "DINER");
-
-    // Main Street landmark: Auto Shop safehouse exterior.
-    this.autoShopSprite = this.add.image(1150, 260, "auto_shop");
-    this.autoShopSprite.setDisplaySize(720, 340);
-
-    // Invisible solid collision box for the Auto Shop wall/roof.
-    // Lower door/garage area stays reachable for future interior trigger.
-    this.autoShopBlocker = this.add.rectangle(1150, 245, 680, 220, 0xff0000, 0);
-    this.physics.add.existing(this.autoShopBlocker, true);
-
-    // Garage/entry marker.
-    this.add.rectangle(1150, 430, 86, 52, 0x111111);
-
-    // Auto Shop exterior props.
-    this.makeSolidProp(820, 420, 80, 48, 0x202020, "TIRES");
-    this.makeSolidProp(930, 430, 74, 40, 0x5a4a2f, "SCRAP");
-    this.makeSolidProp(1465, 420, 94, 54, 0x263626, "DUMP");
-    this.makeSolidProp(1015, 438, 58, 38, 0x70431d, "TOOLS");
-
-    // Service-yard fence pieces, split so the door path is open.
-    this.makeSolidProp(850, 480, 250, 16, 0x2a2a2a, "");
-    this.makeSolidProp(1450, 480, 250, 16, 0x2a2a2a, "");
-    this.makeSolidProp(720, 355, 16, 250, 0x2a2a2a, "");
-    this.makeSolidProp(1580, 355, 16, 250, 0x2a2a2a, "");
-
-    this.add.text(1150, 78, "AUTO SHOP SAFEHOUSE", {
-      fontSize: "22px",
-      color: "#e6e6e6",
-      fontFamily: "Arial"
-    }).setOrigin(0.5);
-
-    this.makeBuilding(1600, 260, 330, 220, "BAR");
-    this.makeBuilding(2050, 260, 360, 220, "MOTEL");
-
-    this.makeBuilding(350, 1140, 360, 220, "HOUSE");
-    this.makeBuilding(850, 1140, 360, 220, "STORE");
-    this.makeBuilding(1350, 1140, 420, 220, "CLINIC");
-    this.makeBuilding(1900, 1140, 420, 220, "POLICE");
+    };
+    make("walk_down", "donny", 0, 7, 8, -1);
+    make("walk_right", "donny", 8, 15, 8, -1);
+    make("walk_left", "donny", 16, 23, 8, -1);
+    make("walk_up", "donny", 24, 31, 8, -1);
+    make("punch_down", "donny_punch", 0, 5, 14, 0);
+    make("punch_right", "donny_punch", 6, 11, 14, 0);
+    make("punch_left", "donny_punch", 12, 17, 14, 0);
+    make("punch_up", "donny_punch", 18, 23, 14, 0);
   }
 
-  makeBuilding(x, y, w, h, label) {
-    this.add.rectangle(x, y, w, h, 0x4b4b4b);
-    this.add.rectangle(x, y - h / 2 + 20, w, 40, 0x222222);
-    this.add.rectangle(x, y + h / 2 - 18, 54, 36, 0x111111);
-
-    this.add.text(x, y - 5, label, {
-      fontSize: "24px",
-      color: "#ffffff",
-      fontFamily: "Arial"
-    }).setOrigin(0.5);
-  }
-
-  makeSolidProp(x, y, w, h, color, label) {
-    const prop = this.add.rectangle(x, y, w, h, color, 0.95);
-    this.physics.add.existing(prop, true);
-
-    if (this.solidObjects) {
-      this.solidObjects.add(prop);
-    }
-
-    if (label) {
-      this.add.text(x, y, label, {
-        fontSize: "11px",
-        color: "#ffffff",
-        fontFamily: "Arial"
-      }).setOrigin(0.5);
-    }
-
-    return prop;
-  }
-
-  createHUD() {
-    this.missionText = this.add.text(20, 20, "Talk To Jim", {
-      fontSize: "24px",
-      color: "#ffff00",
-      fontFamily: "Arial"
+  createHUD(versionText) {
+    this.missionText = this.add.text(20, 20, GameState.mission, {
+      fontSize: "24px", color: "#ffff00", fontFamily: "Arial"
     }).setScrollFactor(0).setDepth(1000);
 
     this.resourceText = this.add.text(20, 58, "", {
-      fontSize: "18px",
-      color: "#ffffff",
-      fontFamily: "Arial"
+      fontSize: "18px", color: "#ffffff", fontFamily: "Arial"
     }).setScrollFactor(0).setDepth(1000);
 
     this.clockText = this.add.text(1040, 20, "", {
-      fontSize: "20px",
-      color: "#ffffff",
-      fontFamily: "Arial"
+      fontSize: "20px", color: "#ffffff", fontFamily: "Arial"
     }).setScrollFactor(0).setDepth(1000);
 
     this.tipText = this.add.text(20, 160, "Move: left stick / WASD   Talk: A / E   Attack: X / Space", {
-      fontSize: "15px",
-      color: "#dddddd",
-      fontFamily: "Arial"
+      fontSize: "15px", color: "#dddddd", fontFamily: "Arial"
     }).setScrollFactor(0).setDepth(1000);
 
-    this.versionText = this.add.text(20, 675, "v0.2.7 - Zombie Frame 0 Placeholder", {
-      fontSize: "14px",
-      color: "#bbbbbb",
-      fontFamily: "Arial"
+    this.inventoryText = this.add.text(20, 195, "", {
+      fontSize: "15px", color: "#d6ffd6", fontFamily: "Arial"
+    }).setScrollFactor(0).setDepth(1000);
+
+    this.versionText = this.add.text(20, 675, versionText, {
+      fontSize: "14px", color: "#bbbbbb", fontFamily: "Arial"
     }).setScrollFactor(0).setDepth(1000);
   }
 
+  updateHUD() {
+    this.missionText.setText(GameState.mission);
+    this.resourceText.setText(
+      "Food: " + GameState.food +
+      "\nMedicine: " + GameState.medicine +
+      "\nWood: " + GameState.wood +
+      "\nSurvivors: " + GameState.survivors
+    );
+    this.inventoryText.setText("Items: " + (GameState.inventory.length ? GameState.inventory.join(", ") : "None"));
+    const h = Math.floor(GameState.minutes / 60).toString().padStart(2, "0");
+    const m = Math.floor(GameState.minutes % 60).toString().padStart(2, "0");
+    this.clockText.setText("Day " + GameState.day + "  " + h + ":" + m);
+  }
+
   createControls() {
-    this.stickBase = this.add.circle(135, 585, 70, 0x000000, 0.42)
-      .setScrollFactor(0)
-      .setDepth(1000);
-
-    this.stickKnob = this.add.circle(135, 585, 32, 0xffffff, 0.45)
-      .setScrollFactor(0)
-      .setDepth(1001);
-
+    this.stickBase = this.add.circle(135, 585, 70, 0x000000, 0.42).setScrollFactor(0).setDepth(1000);
+    this.stickKnob = this.add.circle(135, 585, 32, 0xffffff, 0.45).setScrollFactor(0).setDepth(1001);
     this.stickHome = { x: 135, y: 585 };
     this.stickTouchId = null;
-
     this.makeButton(1120, 505, "Y", "y");
     this.makeButton(1060, 575, "X", "x");
     this.makeButton(1180, 575, "B", "b");
     this.makeButton(1120, 645, "A", "a");
-
-    this.add.text(1060, 650, "SELECT", {
-      fontSize: "13px",
-      color: "#ffffff",
-      fontFamily: "Arial"
-    }).setOrigin(0.5).setScrollFactor(0).setDepth(1001);
-
-    this.add.text(1190, 650, "START", {
-      fontSize: "13px",
-      color: "#ffffff",
-      fontFamily: "Arial"
-    }).setOrigin(0.5).setScrollFactor(0).setDepth(1001);
+    this.add.text(1060, 650, "SELECT", { fontSize: "13px", color: "#ffffff", fontFamily: "Arial" }).setOrigin(0.5).setScrollFactor(0).setDepth(1001);
+    this.add.text(1190, 650, "START", { fontSize: "13px", color: "#ffffff", fontFamily: "Arial" }).setOrigin(0.5).setScrollFactor(0).setDepth(1001);
   }
 
   makeButton(x, y, label, key) {
-    const btn = this.add.circle(x, y, 38, 0x333333, 0.72)
-      .setInteractive()
-      .setScrollFactor(0)
-      .setDepth(1000);
-
-    this.add.text(x, y, label, {
-      fontSize: "24px",
-      color: "#ffffff",
-      fontFamily: "Arial"
-    }).setOrigin(0.5).setScrollFactor(0).setDepth(1001);
-
+    const btn = this.add.circle(x, y, 38, 0x333333, 0.72).setInteractive().setScrollFactor(0).setDepth(1000);
+    this.add.text(x, y, label, { fontSize: "24px", color: "#ffffff", fontFamily: "Arial" }).setOrigin(0.5).setScrollFactor(0).setDepth(1001);
     btn.on("pointerdown", () => {
       this.mobile[key] = true;
-
       if (key === "a") this.tryInteract();
       if (key === "x") this.attack();
     });
-
-    btn.on("pointerup", () => {
-      this.mobile[key] = false;
-    });
-
-    btn.on("pointerout", () => {
-      this.mobile[key] = false;
-    });
+    btn.on("pointerup", () => { this.mobile[key] = false; });
+    btn.on("pointerout", () => { this.mobile[key] = false; });
   }
 
   handleVirtualStick() {
     let found = false;
-
     for (const p of this.input.manager.pointers) {
       if (!p || !p.isDown) continue;
-
       if (p.x < 480) {
         found = true;
-
         if (this.stickTouchId === null) {
           this.stickTouchId = p.id;
           this.stickHome.x = p.x;
@@ -559,263 +151,369 @@ class MainStreetScene extends Phaser.Scene {
           this.stickBase.x = p.x;
           this.stickBase.y = p.y;
         }
-
         if (this.stickTouchId === p.id) {
           const dx = p.x - this.stickHome.x;
           const dy = p.y - this.stickHome.y;
-
           this.mobile.left = dx < -18;
           this.mobile.right = dx > 18;
           this.mobile.up = dy < -18;
           this.mobile.down = dy > 18;
-
           const dist = Math.min(48, Math.sqrt(dx * dx + dy * dy));
           const angle = Math.atan2(dy, dx);
-
           this.stickKnob.x = this.stickHome.x + Math.cos(angle) * dist;
           this.stickKnob.y = this.stickHome.y + Math.sin(angle) * dist;
         }
       }
     }
-
     if (!found) {
       this.stickTouchId = null;
-      this.mobile.left = false;
-      this.mobile.right = false;
-      this.mobile.up = false;
-      this.mobile.down = false;
-
-      this.stickHome.x = 135;
-      this.stickHome.y = 585;
-
-      this.stickBase.x = 135;
-      this.stickBase.y = 585;
-      this.stickKnob.x = 135;
-      this.stickKnob.y = 585;
+      this.mobile.left = false; this.mobile.right = false; this.mobile.up = false; this.mobile.down = false;
+      this.stickHome.x = 135; this.stickHome.y = 585;
+      this.stickBase.x = 135; this.stickBase.y = 585;
+      this.stickKnob.x = 135; this.stickKnob.y = 585;
     }
   }
 
-  tryInteract() {
-    const distToJim = Phaser.Math.Distance.Between(
-      this.player.x,
-      this.player.y,
-      this.jim.x,
-      this.jim.y
-    );
+  makeDialogue(title, body) {
+    if (this.dialogueBox) this.dialogueBox.destroy();
+    const box = this.add.container(640, 610).setScrollFactor(0).setDepth(2000);
+    const bg = this.add.rectangle(0, 0, 760, 120, 0x000000, 0.78).setStrokeStyle(2, 0xffffff, 0.35);
+    const t = this.add.text(-360, -48, title, { fontSize: "20px", color: "#ffff00", fontFamily: "Arial" });
+    const b = this.add.text(-360, -15, body + "\n\nPress A / E", { fontSize: "16px", color: "#ffffff", fontFamily: "Arial", wordWrap: { width: 710 } });
+    box.add([bg, t, b]);
+    this.dialogueBox = box;
+    this.time.delayedCall(3500, () => { if (box && box.active) box.destroy(); });
+  }
 
-    if (distToJim < 140 && !this.jimFollowing && !this.safehouseUnlocked) {
-      this.jimFollowing = true;
-      this.missionText.setText("Escort Jim To Auto Shop");
+  handlePlayerMovement(colliders) {
+    const speed = 240;
+    this.player.setVelocity(0);
+    const left = this.keys.left.isDown || this.mobile.left;
+    const right = this.keys.right.isDown || this.mobile.right;
+    const up = this.keys.up.isDown || this.mobile.up;
+    const down = this.keys.down.isDown || this.mobile.down;
+    if (left) this.player.setVelocityX(-speed);
+    if (right) this.player.setVelocityX(speed);
+    if (up) this.player.setVelocityY(-speed);
+    if (down) this.player.setVelocityY(speed);
+    this.player.body.velocity.normalize().scale(speed);
+    if (colliders) colliders.forEach(obj => { if (obj) this.physics.collide(this.player, obj); });
+    if (left) this.facing = "left"; else if (right) this.facing = "right"; else if (up) this.facing = "up"; else if (down) this.facing = "down";
+    if (!this.isAttacking) {
+      if (left) this.player.anims.play("walk_left", true);
+      else if (right) this.player.anims.play("walk_right", true);
+      else if (up) this.player.anims.play("walk_up", true);
+      else if (down) this.player.anims.play("walk_down", true);
+      else this.player.anims.stop();
     }
   }
 
   attack() {
-    if (this.attackCooldown) return;
-
+    if (this.attackCooldown || !this.player) return;
     this.attackCooldown = true;
-
-    this.time.delayedCall(350, () => {
-      this.attackCooldown = false;
-    });
-
+    this.time.delayedCall(350, () => { this.attackCooldown = false; });
     this.isAttacking = true;
     this.player.setTexture("donny_punch");
     this.player.anims.play("punch_" + this.facing, true);
-
     this.player.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
       this.isAttacking = false;
       this.player.setTexture("donny");
     });
-
     const slash = this.add.circle(this.player.x, this.player.y, 80, 0xffffff, 0.18);
     this.time.delayedCall(120, () => slash.destroy());
-
-    if (this.zombie && this.zombie.active && !this.zombieDead) {
-      const d = Phaser.Math.Distance.Between(
-        this.player.x,
-        this.player.y,
-        this.zombie.x,
-        this.zombie.y
-      );
-
+    if (this.zombie && this.zombie.active && !GameState.zombieDead) {
+      const d = Phaser.Math.Distance.Between(this.player.x, this.player.y, this.zombie.x, this.zombie.y);
       if (d < 120) {
         this.zombie.hp -= 25;
         this.zombie.setTint(0x99ff99);
-
-        this.time.delayedCall(100, () => {
-          if (this.zombie && this.zombie.active) {
-            this.zombie.clearTint();
-          }
-        });
-
-        if (this.zombie.hp <= 0) {
-          this.killZombie();
-        }
+        this.time.delayedCall(100, () => { if (this.zombie && this.zombie.active) this.zombie.clearTint(); });
+        if (this.zombie.hp <= 0) this.killZombie();
       }
+    }
+  }
+}
+
+class MainStreetScene extends BaseScene {
+  constructor() { super("MainStreetScene"); }
+
+  preload() {
+    this.load.spritesheet("donny", "assets/characters/donny_walk_4dir_128x128_phaser.png?v=030", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_punch", "assets/characters/donny_punch_4dir_128x128_phaser.png?v=030", { frameWidth: 128, frameHeight: 128 });
+    this.load.image("auto_shop", "assets/buildings/auto_shop.png?v=030");
+    this.load.image("road_tiles", "assets/tiles/road_tiles_32x32.png?v=030");
+    this.load.spritesheet("farmer_walk", "assets/zombies/farmer_walker_walk.png?v=030", { frameWidth: 256, frameHeight: 256 });
+  }
+
+  create(data) {
+    this.setupMobile();
+    this.worldW = 2400; this.worldH = 1400;
+    this.physics.world.setBounds(0, 0, this.worldW, this.worldH);
+    this.cameras.main.setBounds(0, 0, this.worldW, this.worldH);
+    this.solidObjects = this.physics.add.staticGroup();
+    this.makeMap();
+    const spawnX = data && data.fromInterior ? 1150 : 1200;
+    const spawnY = data && data.fromInterior ? 520 : 720;
+    this.createPlayer(spawnX, spawnY);
+    this.createPlayerAnims();
+    this.createJim();
+    this.createZombie();
+    this.keys = this.input.keyboard.addKeys({ up:"W", down:"S", left:"A", right:"D", interact:"E", attack:"SPACE" });
+    this.createHUD("v0.3.0 - First Playable");
+    this.createControls();
+  }
+
+  makeMap() {
+    this.map = this.make.tilemap({ tileWidth: 32, tileHeight: 32, width: 75, height: 45 });
+    const tiles = this.map.addTilesetImage("road_tiles", "road_tiles", 32, 32, 0, 0);
+    const ground = this.map.createBlankLayer("ground", tiles, 0, 0);
+    const ASPHALT = 0, ASPHALT_DARK = 1, YELLOW_LINE = 2, DASHED_YELLOW = 3, WHITE_LINE = 4;
+    const SIDEWALK = 24, SIDEWALK_CRACKED = 25, GRAVEL = 32, DIRT = 41, GRASS = 48, GRASS_DARK = 49, TALL_GRASS = 50, PATH = 53;
+    ground.fill(GRASS);
+    for (let y = 0; y < 45; y++) for (let x = 0; x < 75; x++) {
+      const n = (x * 17 + y * 31) % 19;
+      if (n === 0) ground.putTileAt(GRASS_DARK, x, y);
+      if (n === 5) ground.putTileAt(TALL_GRASS, x, y);
+    }
+    for (let x = 0; x < 75; x++) {
+      ground.putTileAt(TALL_GRASS, x, 0); ground.putTileAt(TALL_GRASS, x, 1); ground.putTileAt(GRASS_DARK, x, 2);
+      ground.putTileAt(TALL_GRASS, x, 42); ground.putTileAt(TALL_GRASS, x, 43); ground.putTileAt(GRASS_DARK, x, 44);
+    }
+    for (let y = 17; y <= 27; y++) for (let x = 0; x < 75; x++) ground.putTileAt((x + y) % 9 === 0 ? ASPHALT_DARK : ASPHALT, x, y);
+    for (let x = 0; x < 75; x++) {
+      ground.putTileAt(SIDEWALK, x, 15); ground.putTileAt(SIDEWALK_CRACKED, x, 16);
+      ground.putTileAt(SIDEWALK_CRACKED, x, 28); ground.putTileAt(SIDEWALK, x, 29);
+      ground.putTileAt(GRAVEL, x, 14); ground.putTileAt(GRAVEL, x, 30);
+    }
+    for (let x = 0; x < 75; x += 7) {
+      ground.putTileAt(DASHED_YELLOW, x, 22); ground.putTileAt(DASHED_YELLOW, x + 1, 22); ground.putTileAt(YELLOW_LINE, x + 2, 22);
+    }
+    const driveways = [8, 21, 36, 50, 64];
+    for (const dx of driveways) { for (let y = 14; y <= 16; y++) ground.putTileAt(DIRT, dx, y); for (let y = 28; y <= 30; y++) ground.putTileAt(DIRT, dx, y); }
+    for (let y = 30; y < 42; y++) { ground.putTileAt(PATH, 15, y); ground.putTileAt(PATH, 43, y); }
+    for (let y = 7; y <= 14; y++) for (let x = 29; x <= 45; x++) ground.putTileAt((x + y) % 5 === 0 ? ASPHALT_DARK : ASPHALT, x, y);
+    for (let x = 31; x <= 43; x += 4) { ground.putTileAt(WHITE_LINE, x, 13); ground.putTileAt(WHITE_LINE, x, 14); }
+
+    this.makeBuilding(250, 260, 300, 220, "GAS", true);
+    this.makeBuilding(680, 260, 330, 220, "DINER", true);
+    this.autoShopSprite = this.add.image(1150, 260, "auto_shop").setDisplaySize(720, 340);
+    this.autoShopBlocker = this.add.rectangle(1150, 245, 680, 220, 0xff0000, 0);
+    this.physics.add.existing(this.autoShopBlocker, true);
+    this.enterAutoShop = this.add.rectangle(1150, 430, 86, 52, 0x111111);
+    this.makeSolidProp(820, 420, 80, 48, 0x202020, "TIRES");
+    this.makeSolidProp(930, 430, 74, 40, 0x5a4a2f, "SCRAP");
+    this.makeSolidProp(1465, 420, 94, 54, 0x263626, "DUMP");
+    this.makeSolidProp(1015, 438, 58, 38, 0x70431d, "TOOLS");
+    this.makeSolidProp(850, 480, 250, 16, 0x2a2a2a, ""); this.makeSolidProp(1450, 480, 250, 16, 0x2a2a2a, "");
+    this.makeSolidProp(720, 355, 16, 250, 0x2a2a2a, ""); this.makeSolidProp(1580, 355, 16, 250, 0x2a2a2a, "");
+    this.add.text(1150, 78, "AUTO SHOP SAFEHOUSE", { fontSize:"22px", color:"#e6e6e6", fontFamily:"Arial" }).setOrigin(0.5);
+    this.makeBuilding(1600, 260, 330, 220, "BAR", true);
+    this.makeBuilding(2050, 260, 360, 220, "MOTEL", true);
+    this.makeBuilding(350, 1140, 360, 220, "HOUSE", true);
+    this.makeBuilding(850, 1140, 360, 220, "STORE", true);
+    this.makeBuilding(1350, 1140, 420, 220, "CLINIC", true);
+    this.makeBuilding(1900, 1140, 420, 220, "POLICE", true);
+
+    // Street/house prop pass.
+    this.makeSolidProp(265, 685, 42, 84, 0x9c241d, "STOP");
+    this.makeSolidProp(1950, 690, 42, 84, 0x9c241d, "STOP");
+    this.makeSolidProp(520, 935, 30, 120, 0x1c1c1c, "");
+    this.makeSolidProp(1680, 935, 30, 120, 0x1c1c1c, "");
+    this.makeSolidProp(310, 1020, 52, 52, 0x234e70, "MAIL");
+    this.makeSolidProp(810, 1020, 52, 52, 0x234e70, "MAIL");
+    this.makeSolidProp(1270, 1015, 60, 60, 0x285a28, "TRASH");
+    this.makeSolidProp(1580, 1015, 60, 60, 0x285a28, "TRASH");
+    this.makeSolidProp(455, 995, 190, 22, 0x6b5028, "");
+    this.makeSolidProp(965, 995, 190, 22, 0x6b5028, "");
+    this.makeSolidProp(1410, 1005, 190, 22, 0x6b5028, "");
+    this.makeSolidProp(1870, 1005, 190, 22, 0x6b5028, "");
+    this.makeSolidProp(515, 475, 200, 80, 0x6b3a1d, "PICKUP");
+    this.makeSolidProp(1210, 510, 150, 65, 0x333333, "CAR");
+  }
+
+  makeBuilding(x, y, w, h, label, solid) {
+    this.add.rectangle(x, y, w, h, 0x4b4b4b);
+    this.add.rectangle(x, y - h / 2 + 20, w, 40, 0x222222);
+    this.add.rectangle(x, y + h / 2 - 18, 54, 36, 0x111111);
+    this.add.text(x, y - 5, label, { fontSize:"24px", color:"#ffffff", fontFamily:"Arial" }).setOrigin(0.5);
+    if (solid) {
+      const blocker = this.add.rectangle(x, y - 10, w, h - 45, 0x000000, 0);
+      this.physics.add.existing(blocker, true);
+      this.solidObjects.add(blocker);
+    }
+  }
+
+  makeSolidProp(x, y, w, h, color, label) {
+    const prop = this.add.rectangle(x, y, w, h, color, 0.95);
+    this.physics.add.existing(prop, true);
+    this.solidObjects.add(prop);
+    if (label) this.add.text(x, y, label, { fontSize:"11px", color:"#ffffff", fontFamily:"Arial" }).setOrigin(0.5);
+    return prop;
+  }
+
+  createJim() {
+    this.jim = this.add.rectangle(1030, 500, 42, 62, 0x00ffff);
+    this.jimLabel = this.add.text(1005, 450, "JIM", { fontSize:"18px", color:"#ffffff", fontFamily:"Arial" });
+    if (GameState.safehouseUnlocked) { this.jim.x = 1150; this.jim.y = 500; }
+  }
+
+  createZombie() {
+    if (GameState.zombieDead) return;
+    this.zombie = this.physics.add.sprite(350, 1180, "farmer_walk", 0);
+    this.zombie.setFrame(0);
+    this.zombie.setScale(0.42);
+    this.zombie.setCollideWorldBounds(true);
+    this.zombie.body.setSize(95, 130);
+    this.zombie.body.setOffset(80, 90);
+    this.zombie.hp = 100;
+    this.zombieLabel = this.add.text(295, 1130, "FARMER WALKER", { fontSize:"15px", color:"#d6ffd6", fontFamily:"Arial" });
+  }
+
+  tryInteract() {
+    if (this.dialogueBox && this.dialogueBox.active) this.dialogueBox.destroy();
+    const dJim = Phaser.Math.Distance.Between(this.player.x, this.player.y, this.jim.x, this.jim.y);
+    if (dJim < 150) {
+      if (!GameState.talkedToJim) {
+        GameState.talkedToJim = true;
+        GameState.mission = "Secure Auto Shop";
+        this.makeDialogue("Jim", "Thank God somebody is still alive. We need that auto shop secured before dark.");
+      } else if (GameState.wrenchFound && !GameState.returnedWrench) {
+        GameState.returnedWrench = true;
+        GameState.jimFollowing = true;
+        GameState.survivors = Math.max(GameState.survivors, 1);
+        GameState.mission = "Escort Jim To Auto Shop";
+        this.makeDialogue("Jim", "You found the wrench. Good. I'm coming with you.");
+      } else if (GameState.safehouseUnlocked) {
+        this.makeDialogue("Jim", "Auto shop is ours for now. Next we search the houses.");
+      } else {
+        this.makeDialogue("Jim", "Clear the walker and check the toolbox inside the shop.");
+      }
+      return;
+    }
+    const dDoor = Phaser.Math.Distance.Between(this.player.x, this.player.y, 1150, 430);
+    if (dDoor < 100) {
+      this.scene.start("AutoShopInteriorScene");
+      return;
     }
   }
 
   killZombie() {
-    this.zombieDead = true;
-    this.zombie.setVelocity(0, 0);
-    this.zombie.setTint(0x777777);
-    this.zombie.setAngle(90);
-    this.zombie.setScale(0.55);
-
-    if (this.zombieLabel) {
-      this.zombieLabel.destroy();
+    GameState.zombieDead = true;
+    if (this.zombie) {
+      this.zombie.setVelocity(0, 0);
+      this.zombie.setTint(0x777777);
+      this.zombie.setAngle(90);
+      this.zombie.setScale(0.55);
     }
-
-    this.missionText.setText("Zombie Down - Help Jim");
+    if (this.zombieLabel) this.zombieLabel.destroy();
+    GameState.mission = "Search Auto Shop Toolbox";
+    this.makeDialogue("Mission", "Zombie down. Search the auto shop toolbox.");
   }
 
   updateZombie() {
-    if (!this.zombie || !this.zombie.active || this.zombieDead) return;
-
-    const zombieDist = Phaser.Math.Distance.Between(
-      this.zombie.x,
-      this.zombie.y,
-      this.player.x,
-      this.player.y
-    );
-
+    if (!this.zombie || !this.zombie.active || GameState.zombieDead) return;
+    this.zombie.setTexture("farmer_walk"); this.zombie.setFrame(0);
+    const zombieDist = Phaser.Math.Distance.Between(this.zombie.x, this.zombie.y, this.player.x, this.player.y);
     if (zombieDist < 600) {
-      const angle = Phaser.Math.Angle.Between(
-        this.zombie.x,
-        this.zombie.y,
-        this.player.x,
-        this.player.y
-      );
-
+      const angle = Phaser.Math.Angle.Between(this.zombie.x, this.zombie.y, this.player.x, this.player.y);
       this.zombie.x += Math.cos(angle) * 0.9;
       this.zombie.y += Math.sin(angle) * 0.9;
-
-      const dx = this.player.x - this.zombie.x;
-      const dy = this.player.y - this.zombie.y;
-
-      if (Math.abs(dx) > Math.abs(dy)) {
-        this.zombieLastDir = dx > 0 ? "right" : "left";
-      } else {
-        this.zombieLastDir = dy > 0 ? "down" : "up";
-      }
-
-      if (this.zombieLastDir === "left") {
-        this.zombie.setFlipX(true);
-      } else if (this.zombieLastDir === "right") {
-        this.zombie.setFlipX(false);
-      }
+      this.zombie.setFlipX(this.player.x < this.zombie.x);
     }
+    if (this.zombieLabel) { this.zombieLabel.x = this.zombie.x - 55; this.zombieLabel.y = this.zombie.y - 70; }
+  }
 
-    // Force row 1, frame 1 placeholder every frame.
-    this.zombie.setTexture("farmer_walk");
-    this.zombie.setFrame(0);
-
-    if (this.zombieLabel) {
-      this.zombieLabel.x = this.zombie.x - 55;
-      this.zombieLabel.y = this.zombie.y - 70;
+  updateJimFollow() {
+    if (!GameState.jimFollowing || GameState.safehouseUnlocked) return;
+    const dist = Phaser.Math.Distance.Between(this.jim.x, this.jim.y, this.player.x, this.player.y);
+    if (dist > 90) {
+      const angle = Phaser.Math.Angle.Between(this.jim.x, this.jim.y, this.player.x, this.player.y);
+      this.jim.x += Math.cos(angle) * 2.0;
+      this.jim.y += Math.sin(angle) * 2.0;
+    }
+    this.jimLabel.x = this.jim.x - 25; this.jimLabel.y = this.jim.y - 50;
+    const safeDist = Phaser.Math.Distance.Between(this.jim.x, this.jim.y, 1150, 430);
+    if (safeDist < 130) {
+      GameState.safehouseUnlocked = true;
+      GameState.jimFollowing = false;
+      GameState.food += 3; GameState.medicine += 1; GameState.wood += 5;
+      GameState.mission = "AUTO SHOP SECURED";
+      this.makeDialogue("Safehouse", "Auto Shop secured. Food +3, Medicine +1, Wood +5.");
     }
   }
 
   update() {
     this.handleVirtualStick();
-
-    if (Phaser.Input.Keyboard.JustDown(this.keys.interact)) {
-      this.tryInteract();
-    }
-
-    if (Phaser.Input.Keyboard.JustDown(this.keys.attack)) {
-      this.attack();
-    }
-
-    const speed = 240;
-    this.player.setVelocity(0);
-
-    const left = this.keys.left.isDown || this.mobile.left;
-    const right = this.keys.right.isDown || this.mobile.right;
-    const up = this.keys.up.isDown || this.mobile.up;
-    const down = this.keys.down.isDown || this.mobile.down;
-
-    if (left) this.player.setVelocityX(-speed);
-    if (right) this.player.setVelocityX(speed);
-    if (up) this.player.setVelocityY(-speed);
-    if (down) this.player.setVelocityY(speed);
-
-    this.player.body.velocity.normalize().scale(speed);
-
-    if (this.autoShopBlocker) {
-      this.physics.collide(this.player, this.autoShopBlocker);
-    }
-
-    if (this.solidObjects) {
-      this.physics.collide(this.player, this.solidObjects);
-    }
-
-    if (left) this.facing = "left";
-    else if (right) this.facing = "right";
-    else if (up) this.facing = "up";
-    else if (down) this.facing = "down";
-
-    if (!this.isAttacking) {
-      if (left) {
-        this.player.anims.play("walk_left", true);
-      } else if (right) {
-        this.player.anims.play("walk_right", true);
-      } else if (up) {
-        this.player.anims.play("walk_up", true);
-      } else if (down) {
-        this.player.anims.play("walk_down", true);
-      } else {
-        this.player.anims.stop();
-      }
-    }
-
+    if (Phaser.Input.Keyboard.JustDown(this.keys.interact)) this.tryInteract();
+    if (Phaser.Input.Keyboard.JustDown(this.keys.attack)) this.attack();
+    this.handlePlayerMovement([this.autoShopBlocker, this.solidObjects]);
     this.updateZombie();
+    this.updateJimFollow();
+    GameState.minutes += 0.03;
+    if (GameState.minutes >= 1440) { GameState.minutes = 0; GameState.day += 1; }
+    this.updateHUD();
+  }
+}
 
-    if (this.jimFollowing && !this.safehouseUnlocked) {
-      const dist = Phaser.Math.Distance.Between(this.jim.x, this.jim.y, this.player.x, this.player.y);
-
-      if (dist > 90) {
-        const angle = Phaser.Math.Angle.Between(this.jim.x, this.jim.y, this.player.x, this.player.y);
-        this.jim.x += Math.cos(angle) * 2.0;
-        this.jim.y += Math.sin(angle) * 2.0;
-      }
-
-      this.jimLabel.x = this.jim.x - 25;
-      this.jimLabel.y = this.jim.y - 50;
-
-      const safeDist = Phaser.Math.Distance.Between(this.jim.x, this.jim.y, 1150, 250);
-
-      if (safeDist < 120) {
-        this.safehouseUnlocked = true;
-        this.jimFollowing = false;
-
-        this.food += 3;
-        this.medicine += 1;
-        this.wood += 5;
-        this.survivors = 1;
-
-        this.missionText.setText("AUTO SHOP SECURED");
-      }
+class AutoShopInteriorScene extends BaseScene {
+  constructor() { super("AutoShopInteriorScene"); }
+  preload() {
+    this.load.spritesheet("donny", "assets/characters/donny_walk_4dir_128x128_phaser.png?v=030", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_punch", "assets/characters/donny_punch_4dir_128x128_phaser.png?v=030", { frameWidth: 128, frameHeight: 128 });
+  }
+  create() {
+    this.setupMobile();
+    this.physics.world.setBounds(0, 0, 1280, 720);
+    this.cameras.main.setBounds(0, 0, 1280, 720);
+    this.solidObjects = this.physics.add.staticGroup();
+    this.makeInterior();
+    this.createPlayer(640, 560);
+    this.createPlayerAnims();
+    this.keys = this.input.keyboard.addKeys({ up:"W", down:"S", left:"A", right:"D", interact:"E", attack:"SPACE" });
+    this.createHUD("v0.3.0 - Auto Shop Interior");
+    this.createControls();
+  }
+  makeInterior() {
+    this.add.rectangle(640, 360, 1280, 720, 0x2a2a2a);
+    this.add.rectangle(640, 60, 1120, 80, 0x1a1a1a);
+    this.add.rectangle(640, 660, 1120, 80, 0x1a1a1a);
+    this.add.text(640, 40, "AUTO SHOP INTERIOR", { fontSize:"28px", color:"#ffffff", fontFamily:"Arial" }).setOrigin(0.5);
+    this.makeSolidInterior(220, 210, 240, 70, 0x555555, "WORKBENCH");
+    this.makeSolidInterior(540, 205, 280, 70, 0x3f3f3f, "TOOL SHELVES");
+    this.makeSolidInterior(930, 205, 260, 70, 0x4a3925, "PARTS SHELVES");
+    this.toolbox = this.add.rectangle(360, 420, 90, 55, 0x70431d, 1);
+    this.add.text(360, 420, "TOOLBOX", { fontSize:"13px", color:"#ffffff", fontFamily:"Arial" }).setOrigin(0.5);
+    this.storageDoor = this.add.rectangle(1040, 455, 150, 90, 0x111111, 1);
+    this.add.text(1040, 455, "STORAGE", { fontSize:"14px", color:"#ffffff", fontFamily:"Arial" }).setOrigin(0.5);
+    this.exitDoor = this.add.rectangle(640, 660, 120, 48, 0x000000, 1);
+    this.add.text(640, 660, "EXIT", { fontSize:"16px", color:"#ffffff", fontFamily:"Arial" }).setOrigin(0.5);
+  }
+  makeSolidInterior(x, y, w, h, color, label) {
+    const obj = this.add.rectangle(x, y, w, h, color, 1);
+    this.physics.add.existing(obj, true); this.solidObjects.add(obj);
+    this.add.text(x, y, label, { fontSize:"14px", color:"#ffffff", fontFamily:"Arial" }).setOrigin(0.5);
+  }
+  tryInteract() {
+    const dExit = Phaser.Math.Distance.Between(this.player.x, this.player.y, this.exitDoor.x, this.exitDoor.y);
+    if (dExit < 110) { this.scene.start("MainStreetScene", { fromInterior: true }); return; }
+    const dTool = Phaser.Math.Distance.Between(this.player.x, this.player.y, this.toolbox.x, this.toolbox.y);
+    if (dTool < 130) {
+      if (!GameState.wrenchFound) {
+        GameState.wrenchFound = true;
+        if (!GameState.inventory.includes("Wrench")) GameState.inventory.push("Wrench");
+        GameState.wood += 2;
+        GameState.mission = "Return Wrench To Jim";
+        this.makeDialogue("Toolbox", "Found Wrench. Also found Wood +2.");
+      } else this.makeDialogue("Toolbox", "Already searched.");
     }
-
-    this.minutes += 0.03;
-
-    if (this.minutes >= 1440) {
-      this.minutes = 0;
-      this.day += 1;
-    }
-
-    const h = Math.floor(this.minutes / 60).toString().padStart(2, "0");
-    const m = Math.floor(this.minutes % 60).toString().padStart(2, "0");
-
-    this.clockText.setText("Day " + this.day + "  " + h + ":" + m);
-
-    this.resourceText.setText(
-      "Food: " + this.food +
-      "\nMedicine: " + this.medicine +
-      "\nWood: " + this.wood +
-      "\nSurvivors: " + this.survivors
-    );
+  }
+  update() {
+    this.handleVirtualStick();
+    if (Phaser.Input.Keyboard.JustDown(this.keys.interact)) this.tryInteract();
+    if (Phaser.Input.Keyboard.JustDown(this.keys.attack)) this.attack();
+    this.handlePlayerMovement([this.solidObjects]);
+    GameState.minutes += 0.02;
+    if (GameState.minutes >= 1440) { GameState.minutes = 0; GameState.day += 1; }
+    this.updateHUD();
   }
 }
 
@@ -825,21 +523,10 @@ const config = {
   height: 720,
   backgroundColor: "#111111",
   parent: document.body,
-  physics: {
-    default: "arcade",
-    arcade: {
-      debug: false
-    }
-  },
-  scale: {
-    mode: Phaser.Scale.FIT,
-    autoCenter: Phaser.Scale.CENTER_BOTH,
-    width: 1280,
-    height: 720
-  },
-  scene: [MainStreetScene]
+  physics: { default: "arcade", arcade: { debug: false } },
+  scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH, width: 1280, height: 720 },
+  scene: [MainStreetScene, AutoShopInteriorScene]
 };
-
 new Phaser.Game(config);
 </script>
 </body>
