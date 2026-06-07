@@ -500,11 +500,12 @@ class MainStreetScene extends BaseScene {
     this.load.image("auto_shop", "assets/buildings/auto_shop.png?v=030");
     this.load.image("auto_repair_sign", "assets/signs/auto_repair_sign.png?v=038");
     this.load.image("road_tiles", "assets/tiles/road_tiles_32x32.png?v=033");
+    this.load.image("mainstreet_bg", "assets/maps/mainstreet_bg.png?v=048");
     this.load.spritesheet("mainstreet_large_props", "assets/props/mainstreet_large_props_256x128.png?v=041", { frameWidth: 256, frameHeight: 128 });
     this.load.spritesheet("mainstreet_small_props", "assets/props/mainstreet_small_props_128x128.png?v=041", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("zombie_worker_walk", "assets/zombies/zombie_worker_walk.png?v=045", { frameWidth: 182, frameHeight: 180 });
-    this.load.spritesheet("zombie_worker_attack", "assets/zombies/zombie_worker_attack.png?v=045", { frameWidth: 182, frameHeight: 180 });
-    this.load.spritesheet("zombie_worker_hurt_ko", "assets/zombies/zombie_worker_hurt_ko.png?v=045", { frameWidth: 182, frameHeight: 180 });
+    this.load.spritesheet("zombie_worker_walk", "assets/zombies/zombie_worker_walk.png?v=046", { frameWidth: 182, frameHeight: 180 });
+    this.load.spritesheet("zombie_worker_attack", "assets/zombies/zombie_worker_attack.png?v=046", { frameWidth: 182, frameHeight: 180 });
+    this.load.spritesheet("zombie_worker_hurt_ko", "assets/zombies/zombie_worker_hurt_ko.png?v=046", { frameWidth: 182, frameHeight: 180 });
     this.load.audio("bg_music", "assets/audio/Grain Silo Ghosts.mp3?v=033");
   }
 
@@ -523,42 +524,18 @@ class MainStreetScene extends BaseScene {
     this.createZombieAnims();
     this.createZombie();
     this.keys = this.input.keyboard.addKeys({ up:"W", down:"S", left:"A", right:"D", interact:"E", attack:"SPACE", shoot:"F", pause:"P", music:"M" });
-    this.createHUD("v0.4.5 - Exact 182x180 Worker Zombie");
+    this.createHUD("v0.4.8 - Exact 182x180 Worker Zombie");
     this.createControls();
     this.ensureMusic();
     this.input.once("pointerdown", () => this.ensureMusic(true));
   }
 
   makeMap() {
-    this.map = this.make.tilemap({ tileWidth: 32, tileHeight: 32, width: 75, height: 45 });
-    const tiles = this.map.addTilesetImage("road_tiles", "road_tiles", 32, 32, 0, 0);
-    const ground = this.map.createBlankLayer("ground", tiles, 0, 0);
-    const ASPHALT = 0, ASPHALT_DARK = 1, YELLOW_LINE = 2, DASHED_YELLOW = 3, WHITE_LINE = 4;
-    const SIDEWALK = 24, SIDEWALK_CRACKED = 25, GRAVEL = 32, DIRT = 41, GRASS = 48, GRASS_DARK = 49, TALL_GRASS = 50, PATH = 53;
-    ground.fill(GRASS);
-    for (let y = 0; y < 45; y++) for (let x = 0; x < 75; x++) {
-      const n = (x * 17 + y * 31) % 19;
-      if (n === 0) ground.putTileAt(GRASS_DARK, x, y);
-      if (n === 5) ground.putTileAt(TALL_GRASS, x, y);
-    }
-    for (let x = 0; x < 75; x++) {
-      ground.putTileAt(TALL_GRASS, x, 0); ground.putTileAt(TALL_GRASS, x, 1); ground.putTileAt(GRASS_DARK, x, 2);
-      ground.putTileAt(TALL_GRASS, x, 42); ground.putTileAt(TALL_GRASS, x, 43); ground.putTileAt(GRASS_DARK, x, 44);
-    }
-    for (let y = 17; y <= 27; y++) for (let x = 0; x < 75; x++) ground.putTileAt((x + y) % 9 === 0 ? ASPHALT_DARK : ASPHALT, x, y);
-    for (let x = 0; x < 75; x++) {
-      ground.putTileAt(SIDEWALK, x, 15); ground.putTileAt(SIDEWALK_CRACKED, x, 16);
-      ground.putTileAt(SIDEWALK_CRACKED, x, 28); ground.putTileAt(SIDEWALK, x, 29);
-      ground.putTileAt(GRAVEL, x, 14); ground.putTileAt(GRAVEL, x, 30);
-    }
-    for (let x = 0; x < 75; x += 7) {
-      ground.putTileAt(DASHED_YELLOW, x, 22); ground.putTileAt(DASHED_YELLOW, x + 1, 22); ground.putTileAt(YELLOW_LINE, x + 2, 22);
-    }
-    const driveways = [8, 21, 36, 50, 64];
-    for (const dx of driveways) { for (let y = 14; y <= 16; y++) ground.putTileAt(DIRT, dx, y); for (let y = 28; y <= 30; y++) ground.putTileAt(DIRT, dx, y); }
-    for (let y = 30; y < 42; y++) { ground.putTileAt(PATH, 15, y); ground.putTileAt(PATH, 43, y); }
-    for (let y = 7; y <= 14; y++) for (let x = 29; x <= 45; x++) ground.putTileAt((x + y) % 5 === 0 ? ASPHALT_DARK : ASPHALT, x, y);
-    for (let x = 31; x <= 43; x += 4) { ground.putTileAt(WHITE_LINE, x, 13); ground.putTileAt(WHITE_LINE, x, 14); }
+    // Large painted Main Street background.
+    // File path: assets/maps/mainstreet_bg.png
+    this.add.image(this.worldW / 2, this.worldH / 2, "mainstreet_bg")
+      .setDisplaySize(this.worldW, this.worldH)
+      .setDepth(-100);
 
     this.makeBuilding(250, 260, 300, 220, "GAS", true);
     this.makeBuilding(680, 260, 330, 220, "DINER", true);
@@ -814,7 +791,7 @@ class AutoShopInteriorScene extends BaseScene {
     this.createPlayer(640, 560);
     this.createPlayerAnims();
     this.keys = this.input.keyboard.addKeys({ up:"W", down:"S", left:"A", right:"D", interact:"E", attack:"SPACE", shoot:"F", pause:"P", music:"M" });
-    this.createHUD("v0.4.5 - Exact 182x180 Worker Zombie");
+    this.createHUD("v0.4.8 - Exact 182x180 Worker Zombie");
     this.createControls();
     this.ensureMusic();
     this.input.once("pointerdown", () => this.ensureMusic(true));
