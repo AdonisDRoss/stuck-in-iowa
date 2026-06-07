@@ -477,7 +477,8 @@ class MainStreetScene extends BaseScene {
     this.load.image("auto_shop", "assets/buildings/auto_shop.png?v=030");
     this.load.image("auto_repair_sign", "assets/signs/auto_repair_sign.png?v=038");
     this.load.image("road_tiles", "assets/tiles/road_tiles_32x32.png?v=033");
-    this.load.spritesheet("mainstreet_props", "assets/props/mainstreet_props_64x64.png?v=033", { frameWidth: 64, frameHeight: 64 });
+    this.load.spritesheet("mainstreet_large_props", "assets/props/mainstreet_large_props_256x128.png?v=041", { frameWidth: 256, frameHeight: 128 });
+    this.load.spritesheet("mainstreet_small_props", "assets/props/mainstreet_small_props_128x128.png?v=041", { frameWidth: 128, frameHeight: 128 });
     this.load.spritesheet("farmer_walk", "assets/zombies/farmer_walker_walk.png?v=033", { frameWidth: 256, frameHeight: 256 });
     this.load.audio("bg_music", "assets/audio/Grain Silo Ghosts.mp3?v=033");
   }
@@ -496,7 +497,7 @@ class MainStreetScene extends BaseScene {
     this.createJim();
     this.createZombie();
     this.keys = this.input.keyboard.addKeys({ up:"W", down:"S", left:"A", right:"D", interact:"E", attack:"SPACE", shoot:"F", pause:"P", music:"M" });
-    this.createHUD("v0.3.7 - Door Entry + Pistol Equip");
+    this.createHUD("v0.4.1 - New Props + Worker Zombie");
     this.createControls();
     this.ensureMusic();
     this.input.once("pointerdown", () => this.ensureMusic(true));
@@ -542,44 +543,24 @@ class MainStreetScene extends BaseScene {
     this.autoShopBlocker = this.add.rectangle(1150, 245, 680, 220, 0xff0000, 0);
     this.physics.add.existing(this.autoShopBlocker, true);
     this.enterAutoShop = this.add.rectangle(965, 430, 52, 52, 0x111111, 0.01);
-    // Auto Shop exterior props from assets/props/mainstreet_props_64x64.png
-    this.makeSpriteProp(820, 420, 0, 0.62, 46, 34);      // tire stack
-    this.makeSpriteProp(930, 430, 3, 0.62, 48, 30);      // scrap pile
-    this.makeSpriteProp(1465, 420, 1, 0.82, 62, 38);     // dumpster
-    this.makeSpriteProp(1015, 438, 2, 0.70, 42, 30);     // tool crate
-    this.makeSpriteProp(750, 455, 4, 0.68, 32, 38);      // oil drum
-    this.makeSpriteProp(1100, 465, 6, 0.72, 50, 26);     // pallet
+    // Main Street new prop sheets.
+    // assets/props/mainstreet_large_props_256x128.png
+    // Row 1: pickup, sedan, dumpster, tire rack
+    // Row 2: storefronts
+    this.makeStreetLargeProp(820, 420, 3, 0.46, 120, 40);      // tire rack
+    this.makeStreetLargeProp(1465, 420, 2, 0.42, 120, 50);     // dumpster
+    this.makeStreetLargeProp(515, 475, 0, 0.48, 130, 48);      // abandoned pickup
+    this.makeStreetLargeProp(1210, 510, 1, 0.46, 120, 44);     // abandoned sedan
 
-    // Service-yard fence pieces.
-    this.makeSpriteProp(850, 480, 18, 2.55, 250, 18);
-    this.makeSpriteProp(1450, 480, 18, 2.55, 250, 18);
-    this.makeSpriteProp(720, 355, 18, 2.55, 18, 250, true);
-    this.makeSpriteProp(1580, 355, 18, 2.55, 18, 250, true);
-    this.add.text(1150, 78, "AUTO SHOP SAFEHOUSE", { fontSize:"22px", color:"#e6e6e6", fontFamily:"Arial" }).setOrigin(0.5);
-    this.makeBuilding(1600, 260, 330, 220, "BAR", true);
-    this.makeBuilding(2050, 260, 360, 220, "MOTEL", true);
-    this.makeBuilding(350, 1140, 360, 220, "HOUSE", true);
-    this.makeBuilding(850, 1140, 360, 220, "STORE", true);
-    this.makeBuilding(1350, 1140, 420, 220, "CLINIC", true);
-    this.makeBuilding(1900, 1140, 420, 220, "POLICE", true);
-
-    // Street/house prop pass from sprite sheet.
-    this.makeSpriteProp(265, 685, 8, 0.88, 28, 52);      // stop sign
-    this.makeSpriteProp(1950, 690, 8, 0.88, 28, 52);     // stop sign
-    this.makeSpriteProp(520, 935, 9, 1.00, 22, 62);      // street light
-    this.makeSpriteProp(1680, 935, 9, 1.00, 22, 62);     // street light
-    this.makeSpriteProp(310, 1020, 10, 0.70, 34, 24);    // mailbox
-    this.makeSpriteProp(810, 1020, 10, 0.70, 34, 24);    // mailbox
-    this.makeSpriteProp(1270, 1015, 11, 0.70, 34, 34);   // trash can
-    this.makeSpriteProp(1580, 1015, 11, 0.70, 34, 34);   // trash can
-    this.makeSpriteProp(455, 995, 16, 2.25, 190, 22);    // wood fence
-    this.makeSpriteProp(965, 995, 16, 2.25, 190, 22);    // wood fence
-    this.makeSpriteProp(1410, 1005, 16, 2.25, 190, 22);  // wood fence
-    this.makeSpriteProp(1870, 1005, 16, 2.25, 190, 22);  // wood fence
-    this.makeSpriteProp(515, 475, 24, 1.25, 100, 42);    // abandoned pickup
-    this.makeSpriteProp(1210, 510, 25, 1.10, 90, 38);   // abandoned sedan
-    this.makeSpriteProp(1225, 1015, 20, 0.75, 42, 28);   // bush
-    this.makeSpriteProp(1815, 1015, 20, 0.75, 42, 28);   // bush
+    // assets/props/mainstreet_small_props_128x128.png
+    this.makeStreetSmallProp(265, 685, 0, 0.55, 32, 42);       // cone / marker
+    this.makeStreetSmallProp(1950, 690, 2, 0.55, 32, 52);      // hydrant / sign-sized prop
+    this.makeStreetSmallProp(310, 1020, 1, 0.55, 36, 28);      // mailbox
+    this.makeStreetSmallProp(810, 1020, 1, 0.55, 36, 28);      // mailbox
+    this.makeStreetSmallProp(1270, 1015, 4, 0.55, 40, 36);     // trash can
+    this.makeStreetSmallProp(1580, 1015, 4, 0.55, 40, 36);     // trash can
+    this.makeStreetSmallProp(1100, 465, 6, 0.62, 64, 26);      // pallet
+    this.makeStreetSmallProp(930, 430, 7, 0.55, 55, 36);       // small tire stack
   }
 
   makeBuilding(x, y, w, h, label, solid) {
@@ -602,20 +583,29 @@ class MainStreetScene extends BaseScene {
     return prop;
   }
 
-  makeSpriteProp(x, y, frame, scale, hitW, hitH, rotateVertical = false) {
-    const sprite = this.add.image(x, y, "mainstreet_props", frame);
+  makePropSprite(key, x, y, frame, scale, hitW, hitH, rotateVertical = false) {
+    if (!this.textures.exists(key)) return null;
+    const sprite = this.add.image(x, y, key, frame);
     sprite.setScale(scale);
     sprite.setDepth(y);
 
-    if (rotateVertical) {
-      sprite.setAngle(90);
+    if (rotateVertical) sprite.setAngle(90);
+
+    if (hitW && hitH) {
+      const blocker = this.add.rectangle(x, y, hitW, hitH, 0xff0000, 0);
+      this.physics.add.existing(blocker, true);
+      this.solidObjects.add(blocker);
     }
 
-    const blocker = this.add.rectangle(x, y, hitW, hitH, 0xff0000, 0);
-    this.physics.add.existing(blocker, true);
-    this.solidObjects.add(blocker);
-
     return sprite;
+  }
+
+  makeStreetLargeProp(x, y, frame, scale, hitW, hitH, rotateVertical = false) {
+    return this.makePropSprite("mainstreet_large_props", x, y, frame, scale, hitW, hitH, rotateVertical);
+  }
+
+  makeStreetSmallProp(x, y, frame, scale, hitW, hitH, rotateVertical = false) {
+    return this.makePropSprite("mainstreet_small_props", x, y, frame, scale, hitW, hitH, rotateVertical);
   }
 
   createJim() {
@@ -741,7 +731,8 @@ class AutoShopInteriorScene extends BaseScene {
     this.load.spritesheet("donny_punch", "assets/characters/donny_punch_4dir_128x128_phaser.png?v=030", { frameWidth: 128, frameHeight: 128 });
     this.load.image("pistol", "assets/weapons/pistol.png?v=039");
     this.load.image("auto_shop_interior_bg", "assets/interiors/auto_shop_empty_interior.png?v=034");
-    this.load.image("auto_shop_interior_props", "assets/props/auto_shop_interior_props.png?v=038");
+    this.load.spritesheet("auto_shop_large_props", "assets/props/auto_shop_large_props_256x128.png?v=041", { frameWidth: 256, frameHeight: 128 });
+    this.load.spritesheet("auto_shop_small_props", "assets/props/auto_shop_small_props_128x128.png?v=041", { frameWidth: 128, frameHeight: 128 });
     this.load.audio("bg_music", "assets/audio/Grain Silo Ghosts.mp3?v=033");
   }
   create() {
@@ -753,7 +744,7 @@ class AutoShopInteriorScene extends BaseScene {
     this.createPlayer(640, 560);
     this.createPlayerAnims();
     this.keys = this.input.keyboard.addKeys({ up:"W", down:"S", left:"A", right:"D", interact:"E", attack:"SPACE", shoot:"F", pause:"P", music:"M" });
-    this.createHUD("v0.3.9 - Punch Shooting + Visible Pistol");
+    this.createHUD("v0.4.1 - Auto Shop Props");
     this.createControls();
     this.ensureMusic();
     this.input.once("pointerdown", () => this.ensureMusic(true));
@@ -762,6 +753,19 @@ class AutoShopInteriorScene extends BaseScene {
     // Game-ready empty interior background.
     // File path: assets/interiors/auto_shop_empty_interior.png
     this.add.image(640, 360, "auto_shop_interior_bg").setDisplaySize(1280, 720).setDepth(0);
+
+    // New auto shop prop sheets.
+    this.add.image(310, 210, "auto_shop_large_props", 0).setScale(0.62).setDepth(210);  // tire rack
+    this.add.image(640, 230, "auto_shop_large_props", 1).setScale(0.62).setDepth(230);  // workbench
+    this.add.image(955, 220, "auto_shop_large_props", 2).setScale(0.60).setDepth(220);  // parts/tool shelf
+    this.add.image(300, 430, "auto_shop_large_props", 3).setScale(0.58).setDepth(430);  // toolbox
+    this.add.image(640, 430, "auto_shop_large_props", 4).setScale(0.58).setDepth(430);  // storage bench
+    this.add.image(1055, 380, "auto_shop_large_props", 5).setScale(0.62).setDepth(380); // door/locker prop
+
+    this.add.image(470, 500, "auto_shop_small_props", 0).setScale(0.42).setDepth(500);  // wrench
+    this.add.image(810, 500, "auto_shop_small_props", 2).setScale(0.45).setDepth(500);  // gas can
+    this.add.image(610, 520, "auto_shop_small_props", 4).setScale(0.45).setDepth(520);  // crate
+    this.add.image(760, 535, "auto_shop_small_props", 6).setScale(0.48).setDepth(535);  // grate
 
     // Invisible collision boundaries placed along the bottom edge of the walls.
     // This keeps Donny's feet from walking through the wall art.
