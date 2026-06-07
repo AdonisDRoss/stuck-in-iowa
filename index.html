@@ -67,6 +67,7 @@ class BaseScene extends Phaser.Scene {
 
   createPlayerAnims() {
     const make = (key, tex, start, end, rate, repeat) => {
+      if (!this.textures.exists(tex)) return;
       if (!this.anims.exists(key)) {
         this.anims.create({ key, frames: this.anims.generateFrameNumbers(tex, { start, end }), frameRate: rate, repeat });
       }
@@ -369,9 +370,17 @@ class BaseScene extends Phaser.Scene {
     if (!this.player || !GameState.pistolEquipped || this.isShooting) return;
     this.isShooting = true;
     this.isAttacking = true;
-    this.player.setTexture("donny_shoot");
-    this.player.setFlipX(this.facing === "left");
-    this.player.anims.play("shoot_" + this.facing, true);
+
+    const hasShootSheet = this.textures.exists("donny_shoot") && this.anims.exists("shoot_" + this.facing);
+    if (hasShootSheet) {
+      this.player.setTexture("donny_shoot");
+      this.player.setFlipX(this.facing === "left");
+      this.player.anims.play("shoot_" + this.facing, true);
+    } else {
+      // Fallback keeps pistol visible even if the shooting sheet has not been uploaded yet.
+      this.player.setFlipX(this.facing === "left");
+      this.player.anims.stop();
+    }
     this.updatePistolOverlay(true);
 
     const bx = this.player.x + (this.facing === "left" ? -80 : this.facing === "right" ? 80 : 0);
@@ -379,13 +388,19 @@ class BaseScene extends Phaser.Scene {
     const flash = this.add.circle(bx, by, 10, 0xffcc33, 0.65).setDepth(2000);
     this.time.delayedCall(70, () => flash.destroy());
 
-    this.player.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
+    const finishShot = () => {
       this.isShooting = false;
       this.isAttacking = false;
       this.player.setTexture("donny");
       this.player.setFlipX(false);
       this.updatePistolOverlay(false);
-    });
+    };
+
+    if (hasShootSheet) {
+      this.player.once(Phaser.Animations.Events.ANIMATION_COMPLETE, finishShot);
+    } else {
+      this.time.delayedCall(180, finishShot);
+    }
   }
 
   updatePistolOverlay(show = GameState.pistolEquipped && GameState.isShooting) {
@@ -472,10 +487,10 @@ class MainStreetScene extends BaseScene {
     });
     this.load.spritesheet("donny", "assets/characters/donny_walk_4dir_128x128_phaser.png?v=030", { frameWidth: 128, frameHeight: 128 });
     this.load.spritesheet("donny_punch", "assets/characters/donny_punch_4dir_128x128_phaser.png?v=030", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("donny_shoot", "assets/characters/donny_shoot_empty_128x128.png?v=036", { frameWidth: 128, frameHeight: 128 });
-    this.load.image("pistol", "assets/weapons/pistol.png?v=036");
+    this.load.spritesheet("donny_shoot", "assets/characters/donny_shoot_empty_128x128.png?v=038", { frameWidth: 128, frameHeight: 128 });
+    this.load.image("pistol", "assets/weapons/pistol.png?v=038");
     this.load.image("auto_shop", "assets/buildings/auto_shop.png?v=030");
-    this.load.image("auto_repair_sign", "assets/signs/auto_repair_sign.png?v=037");
+    this.load.image("auto_repair_sign", "assets/signs/auto_repair_sign.png?v=038");
     this.load.image("road_tiles", "assets/tiles/road_tiles_32x32.png?v=033");
     this.load.spritesheet("mainstreet_props", "assets/props/mainstreet_props_64x64.png?v=033", { frameWidth: 64, frameHeight: 64 });
     this.load.spritesheet("farmer_walk", "assets/zombies/farmer_walker_walk.png?v=033", { frameWidth: 256, frameHeight: 256 });
@@ -489,7 +504,7 @@ class MainStreetScene extends BaseScene {
     this.cameras.main.setBounds(0, 0, this.worldW, this.worldH);
     this.solidObjects = this.physics.add.staticGroup();
     this.makeMap();
-    const spawnX = data && data.fromInterior ? 1150 : 1200;
+    const spawnX = data && data.fromInterior ? 965 : 1200;
     const spawnY = data && data.fromInterior ? 520 : 720;
     this.createPlayer(spawnX, spawnY);
     this.createPlayerAnims();
@@ -739,10 +754,10 @@ class AutoShopInteriorScene extends BaseScene {
     });
     this.load.spritesheet("donny", "assets/characters/donny_walk_4dir_128x128_phaser.png?v=030", { frameWidth: 128, frameHeight: 128 });
     this.load.spritesheet("donny_punch", "assets/characters/donny_punch_4dir_128x128_phaser.png?v=030", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("donny_shoot", "assets/characters/donny_shoot_empty_128x128.png?v=036", { frameWidth: 128, frameHeight: 128 });
-    this.load.image("pistol", "assets/weapons/pistol.png?v=036");
+    this.load.spritesheet("donny_shoot", "assets/characters/donny_shoot_empty_128x128.png?v=038", { frameWidth: 128, frameHeight: 128 });
+    this.load.image("pistol", "assets/weapons/pistol.png?v=038");
     this.load.image("auto_shop_interior_bg", "assets/interiors/auto_shop_empty_interior.png?v=034");
-    this.load.image("auto_shop_interior_props", "assets/props/auto_shop_interior_props.png?v=034");
+    this.load.image("auto_shop_interior_props", "assets/props/auto_shop_interior_props.png?v=038");
     this.load.audio("bg_music", "assets/audio/Grain Silo Ghosts.mp3?v=033");
   }
   create() {
@@ -777,7 +792,7 @@ class AutoShopInteriorScene extends BaseScene {
     this.toolbox = this.add.zone(640, 500, 120, 90);
     this.physics.add.existing(this.toolbox, true);
 
-    this.exitDoor = this.add.zone(640, 665, 150, 70);
+    this.exitDoor = this.add.zone(640, 690, 220, 70);
     this.physics.add.existing(this.exitDoor, true);
   }
 
@@ -795,7 +810,7 @@ class AutoShopInteriorScene extends BaseScene {
   }
   tryInteract() {
     const dExit = Phaser.Math.Distance.Between(this.player.x, this.player.y, this.exitDoor.x, this.exitDoor.y);
-    if (dExit < 110) { this.scene.start("MainStreetScene", { fromInterior: true }); return; }
+    if (dExit < 130) { this.scene.start("MainStreetScene", { fromInterior: true }); return; }
     const dTool = Phaser.Math.Distance.Between(this.player.x, this.player.y, this.toolbox.x, this.toolbox.y);
     if (dTool < 130) {
       if (!GameState.wrenchFound) {
@@ -820,6 +835,7 @@ class AutoShopInteriorScene extends BaseScene {
     if (Phaser.Input.Keyboard.JustDown(this.keys.attack)) this.attack();
     if (Phaser.Input.Keyboard.JustDown(this.keys.shoot)) this.shootPistol();
     this.handlePlayerMovement([this.solidObjects]);
+    if (this.physics.overlap(this.player, this.exitDoor)) { this.scene.start("MainStreetScene", { fromInterior: true }); return; }
     GameState.minutes += 0.02;
     if (GameState.minutes >= 1440) { GameState.minutes = 0; GameState.day += 1; }
     this.updateHUD();
