@@ -451,17 +451,7 @@ class BaseScene extends Phaser.Scene {
       else if (down) this.player.anims.play("walk_down", true);
       else this.player.anims.stop();
     }
-    this.updateDepthSort();
     if (this.isShooting) this.updatePistolOverlay(true, this.shotFacing); else this.updatePistolOverlay(false);
-  }
-
-  updateDepthSort() {
-    if (this.player && this.player.setDepth) this.player.setDepth(this.player.y + 20);
-    if (this.pistolSprite && this.pistolSprite.visible && this.player) this.pistolSprite.setDepth(this.player.y + 45);
-    if (this.zombie && this.zombie.setDepth) this.zombie.setDepth(this.zombie.y + 10);
-    if (this.zombieLabel && this.zombie) this.zombieLabel.setDepth(this.zombie.y + 1000);
-    if (this.jim && this.jim.setDepth) this.jim.setDepth(this.jim.y + 12);
-    if (this.jimLabel && this.jim) this.jimLabel.setDepth(this.jim.y + 1000);
   }
 
   attack() {
@@ -506,16 +496,16 @@ class MainStreetScene extends BaseScene {
     });
     this.load.spritesheet("donny", "assets/characters/donny_walk_4dir_128x128_phaser.png?v=030", { frameWidth: 128, frameHeight: 128 });
     this.load.spritesheet("donny_punch", "assets/characters/donny_punch_4dir_128x128_phaser.png?v=030", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("jim_walk", "assets/characters/jim_walk_4dir_128x128_phaser.png?v=053", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("jim_punch", "assets/characters/jim_punch_4dir_128x128_phaser.png?v=053", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("jim_hurt_ko", "assets/characters/jim_hurt_ko_4dir_128x128_phaser.png?v=053", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("jim_walk", "assets/characters/jim_walk_4dir_128x128_phaser.png?v=052", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("jim_punch", "assets/characters/jim_punch_4dir_128x128_phaser.png?v=052", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("jim_hurt_ko", "assets/characters/jim_hurt_ko_4dir_128x128_phaser.png?v=052", { frameWidth: 128, frameHeight: 128 });
     this.load.image("pistol", "assets/weapons/pistol.png?v=042");
     this.load.image("auto_shop", "assets/buildings/auto_shop.png?v=030");
-    this.load.image("diner", "assets/buildings/diner.png?v=053");
-    this.load.image("hardware_store", "assets/buildings/hardware_store.png?v=053");
-    this.load.image("pharmacy", "assets/buildings/pharmacy.png?v=053");
-    this.load.image("music_store", "assets/buildings/music_store.png?v=053");
-    this.load.spritesheet("store_signs", "assets/signs/store_signs_256x128.png?v=053", { frameWidth: 256, frameHeight: 128 });
+    this.load.image("diner", "assets/buildings/diner.png?v=050");
+    this.load.image("hardware_store", "assets/buildings/hardware_store.png?v=050");
+    this.load.image("pharmacy", "assets/buildings/pharmacy.png?v=050");
+    this.load.image("music_store", "assets/buildings/music_store.png?v=050");
+    this.load.spritesheet("store_signs", "assets/signs/store_signs_256x128.png?v=050", { frameWidth: 256, frameHeight: 128 });
     this.load.image("road_tiles", "assets/tiles/road_tiles_32x32.png?v=033");
     this.load.image("mainstreet_bg", "assets/maps/mainstreet_bg.png?v=048");
     this.load.spritesheet("mainstreet_large_props", "assets/props/mainstreet_large_props_256x128.png?v=041", { frameWidth: 256, frameHeight: 128 });
@@ -541,7 +531,7 @@ class MainStreetScene extends BaseScene {
     this.createZombieAnims();
     this.createZombie();
     this.keys = this.input.keyboard.addKeys({ up:"W", down:"S", left:"A", right:"D", interact:"E", attack:"SPACE", shoot:"F", pause:"P", music:"M" });
-    this.createHUD("v0.5.3 - Depth + Store Placement Fix");
+    this.createHUD("v0.5.2 - Jim + Storefront Fix");
     this.createControls();
     this.ensureMusic();
     this.input.once("pointerdown", () => this.ensureMusic(true));
@@ -553,57 +543,52 @@ makeMap() {
     .setDisplaySize(this.worldW, this.worldH)
     .setDepth(-100);
 
-  // Covers the fake checkerboard/transparent sky baked into the current Main Street background.
-  // Replace the background art later and this can be removed safely.
-  this.add.rectangle(this.worldW / 2, 62, this.worldW, 128, 0x4f5a42, 1).setDepth(-99);
-  this.add.rectangle(this.worldW / 2, 132, this.worldW, 80, 0x596348, 0.92).setDepth(-98);
-
   this.storeDoorZones = [];
 
-  // North-side storefront run. Y positions are grounded on the pavement, while depths keep Donny/Jim in front.
-  this.placeStoreBuilding({ key: "diner", label: "Diner", x: 330, y: 305, w: 430, h: 220, doorX: 330, doorY: 455, signFrame: 1, spawn: { x: 330, y: 540 } });
-  this.placeStoreBuilding({ key: "hardware", image: "hardware_store", label: "Hardware", x: 790, y: 305, w: 430, h: 220, doorX: 790, doorY: 455, signFrame: 2, spawn: { x: 790, y: 540 } });
-  this.placeStoreBuilding({ key: "pharmacy", label: "Pharmacy", x: 1680, y: 305, w: 430, h: 220, doorX: 1680, doorY: 455, signFrame: 3, spawn: { x: 1680, y: 540 } });
-  this.placeStoreBuilding({ key: "music", image: "music_store", label: "Music Store", x: 2120, y: 305, w: 430, h: 220, doorX: 2120, doorY: 455, signFrame: 4, spawn: { x: 2120, y: 540 } });
+  // Main Street north-side storefront run.
+  this.placeStoreBuilding({ key: "diner", label: "Diner", x: 330, y: 255, w: 470, h: 240, doorX: 330, doorY: 435, signFrame: 1, spawn: { x: 330, y: 525 } });
+  this.placeStoreBuilding({ key: "hardware", image: "hardware_store", label: "Hardware", x: 770, y: 255, w: 470, h: 240, doorX: 770, doorY: 435, signFrame: 2, spawn: { x: 770, y: 525 } });
+  this.placeStoreBuilding({ key: "pharmacy", label: "Pharmacy", x: 1670, y: 255, w: 470, h: 240, doorX: 1670, doorY: 435, signFrame: 3, spawn: { x: 1670, y: 525 } });
+  this.placeStoreBuilding({ key: "music", image: "music_store", label: "Music Store", x: 2110, y: 255, w: 470, h: 240, doorX: 2110, doorY: 435, signFrame: 4, spawn: { x: 2110, y: 525 } });
 
-  // Auto shop is the current mission hub. Keep it grounded and let characters depth-sort in front.
-  this.autoShopSprite = this.add.image(1235, 305, "auto_shop").setDisplaySize(560, 265).setDepth(330);
-  this.add.image(1235, 220, "store_signs", 0).setScale(0.30).setDepth(900);
-  this.autoShopDoorZone = this.add.zone(1060, 455, 72, 100);
+  // Jim's auto shop remains the current mission hub.
+  this.autoShopSprite = this.add.image(1220, 255, "auto_shop").setDisplaySize(580, 275).setDepth(240);
+  this.add.image(1220, 150, "store_signs", 0).setScale(0.30).setDepth(900);
+  this.autoShopDoorZone = this.add.zone(1045, 425, 72, 100);
   this.physics.add.existing(this.autoShopDoorZone, true);
-  this.autoShopBlocker = this.add.rectangle(1235, 272, 530, 150, 0xff0000, 0);
+  this.autoShopBlocker = this.add.rectangle(1220, 235, 540, 165, 0xff0000, 0);
   this.physics.add.existing(this.autoShopBlocker, true);
   this.solidObjects.add(this.autoShopBlocker);
 
-  // Street props are placed lower on the pavement and depth-sorted by their Y position.
-  this.makeStreetLargeProp(900, 505, 3, 0.46, 120, 40);      // tire rack
-  this.makeStreetLargeProp(1530, 505, 2, 0.42, 120, 50);     // dumpster
-  this.makeStreetLargeProp(510, 570, 0, 0.52, 140, 52);      // abandoned pickup
-  this.makeStreetLargeProp(1260, 590, 1, 0.50, 130, 48);     // abandoned sedan
+  // Street props.
+  this.makeStreetLargeProp(900, 455, 3, 0.46, 120, 40);      // tire rack
+  this.makeStreetLargeProp(1505, 455, 2, 0.42, 120, 50);     // dumpster
+  this.makeStreetLargeProp(510, 520, 0, 0.52, 140, 52);      // abandoned pickup
+  this.makeStreetLargeProp(1260, 540, 1, 0.50, 130, 48);     // abandoned sedan
 
-  this.makeStreetSmallProp(265, 735, 0, 0.55, 32, 42);
-  this.makeStreetSmallProp(1950, 740, 2, 0.55, 32, 52);
-  this.makeStreetSmallProp(310, 1070, 1, 0.55, 36, 28);
-  this.makeStreetSmallProp(810, 1070, 1, 0.55, 36, 28);
-  this.makeStreetSmallProp(1270, 1065, 4, 0.55, 40, 36);
-  this.makeStreetSmallProp(1580, 1065, 4, 0.55, 40, 36);
-  this.makeStreetSmallProp(1100, 515, 6, 0.62, 64, 26);
-  this.makeStreetSmallProp(930, 480, 7, 0.55, 55, 36);
+  this.makeStreetSmallProp(265, 685, 0, 0.55, 32, 42);
+  this.makeStreetSmallProp(1950, 690, 2, 0.55, 32, 52);
+  this.makeStreetSmallProp(310, 1020, 1, 0.55, 36, 28);
+  this.makeStreetSmallProp(810, 1020, 1, 0.55, 36, 28);
+  this.makeStreetSmallProp(1270, 1015, 4, 0.55, 40, 36);
+  this.makeStreetSmallProp(1580, 1015, 4, 0.55, 40, 36);
+  this.makeStreetSmallProp(1100, 465, 6, 0.62, 64, 26);
+  this.makeStreetSmallProp(930, 430, 7, 0.55, 55, 36);
 }
+
 placeStoreBuilding(cfg) {
   const imageKey = cfg.image || cfg.key;
   const building = this.add.image(cfg.x, cfg.y, imageKey)
     .setDisplaySize(cfg.w, cfg.h)
-    .setDepth(cfg.y + 25);
+    .setDepth(cfg.y);
 
   if (this.textures.exists("store_signs")) {
-    this.add.image(cfg.x, cfg.y - 84, "store_signs", cfg.signFrame)
+    this.add.image(cfg.x, cfg.y - 105, "store_signs", cfg.signFrame)
       .setScale(0.28)
       .setDepth(900);
   }
 
-  // Block the wall/roof, not the walkable front apron.
-  const blocker = this.add.rectangle(cfg.x, cfg.y - 28, cfg.w * 0.82, cfg.h * 0.46, 0xff0000, 0);
+  const blocker = this.add.rectangle(cfg.x, cfg.y - 20, cfg.w * 0.88, cfg.h * 0.58, 0xff0000, 0);
   this.physics.add.existing(blocker, true);
   this.solidObjects.add(blocker);
 
@@ -612,6 +597,7 @@ placeStoreBuilding(cfg) {
   this.storeDoorZones.push({ key: cfg.key, label: cfg.label, zone: door, spawn: cfg.spawn });
   return building;
 }
+
 enterStore(key) {
   const info = (this.storeDoorZones || []).find(d => d.key === key);
   this.scene.start("StoreInteriorScene", { store: key, spawn: info ? info.spawn : { x: 1200, y: 720 } });
@@ -682,7 +668,7 @@ enterStore(key) {
   }
 
   createJim() {
-    const startX = GameState.safehouseUnlocked ? 1235 : 1030;
+    const startX = GameState.safehouseUnlocked ? 1220 : 1030;
     const startY = GameState.safehouseUnlocked ? 500 : 500;
     this.jimFacing = "down";
 
@@ -768,7 +754,7 @@ tryInteract() {
     return;
   }
 
-  const dDoor = Phaser.Math.Distance.Between(this.player.x, this.player.y, 1060, 455);
+  const dDoor = Phaser.Math.Distance.Between(this.player.x, this.player.y, 1045, 425);
   if (dDoor < 95) {
     this.scene.start("AutoShopInteriorScene");
     return;
@@ -895,7 +881,7 @@ tryInteract() {
       }
     }
 
-    const safeDist = Phaser.Math.Distance.Between(this.jim.x, this.jim.y, 1235, 455);
+    const safeDist = Phaser.Math.Distance.Between(this.jim.x, this.jim.y, 1220, 430);
     if (safeDist < 130) {
       GameState.safehouseUnlocked = true;
       GameState.jimFollowing = false;
@@ -954,7 +940,7 @@ class AutoShopInteriorScene extends BaseScene {
     this.createPlayer(640, 560);
     this.createPlayerAnims();
     this.keys = this.input.keyboard.addKeys({ up:"W", down:"S", left:"A", right:"D", interact:"E", attack:"SPACE", shoot:"F", pause:"P", music:"M" });
-    this.createHUD("v0.5.3 - Depth + Store Placement Fix");
+    this.createHUD("v0.5.2 - Jim + Storefront Fix");
     this.createControls();
     this.ensureMusic();
     this.input.once("pointerdown", () => this.ensureMusic(true));
@@ -1077,7 +1063,7 @@ class StoreInteriorScene extends BaseScene {
     this.createPlayer(640, 610);
     this.createPlayerAnims();
     this.keys = this.input.keyboard.addKeys({ up:"W", down:"S", left:"A", right:"D", interact:"E", attack:"SPACE", shoot:"F", pause:"P", music:"M" });
-    this.createHUD("v0.5.3 - Depth + Store Placement Fix");
+    this.createHUD("v0.5.2 - Jim + Storefront Fix");
     this.createControls();
     this.ensureMusic();
     this.input.once("pointerdown", () => this.ensureMusic(true));
