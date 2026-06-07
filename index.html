@@ -132,8 +132,20 @@ class BaseScene extends Phaser.Scene {
     this.add.text(1060, 650, "SELECT", { fontSize: "13px", color: "#ffffff", fontFamily: "Arial" }).setOrigin(0.5).setScrollFactor(0).setDepth(1001);
     this.add.text(1190, 650, "START", { fontSize: "13px", color: "#ffffff", fontFamily: "Arial" }).setOrigin(0.5).setScrollFactor(0).setDepth(1001);
 
+    // Big visible pause button for mobile testing.
+    const pauseBtn = this.add.rectangle(1180, 55, 120, 44, 0x000000, 0.62)
+      .setInteractive()
+      .setScrollFactor(0)
+      .setDepth(1500);
+    this.add.text(1180, 55, "PAUSE", {
+      fontSize: "18px",
+      color: "#ffffff",
+      fontFamily: "Arial"
+    }).setOrigin(0.5).setScrollFactor(0).setDepth(1501);
+
     selectHit.on("pointerdown", () => this.toggleMusic());
     startHit.on("pointerdown", () => this.togglePauseMenu());
+    pauseBtn.on("pointerdown", () => this.togglePauseMenu());
   }
 
   makeButton(x, y, label, key) {
@@ -141,6 +153,7 @@ class BaseScene extends Phaser.Scene {
     this.add.text(x, y, label, { fontSize: "24px", color: "#ffffff", fontFamily: "Arial" }).setOrigin(0.5).setScrollFactor(0).setDepth(1001);
     btn.on("pointerdown", () => {
       this.mobile[key] = true;
+      this.ensureMusic(true);
       if (key === "a") this.tryInteract();
       if (key === "x") this.attack();
     });
@@ -370,13 +383,16 @@ class MainStreetScene extends BaseScene {
   constructor() { super("MainStreetScene"); }
 
   preload() {
+    this.load.on("loaderror", (file) => {
+      console.warn("Asset failed:", file && file.src);
+    });
     this.load.spritesheet("donny", "assets/characters/donny_walk_4dir_128x128_phaser.png?v=030", { frameWidth: 128, frameHeight: 128 });
     this.load.spritesheet("donny_punch", "assets/characters/donny_punch_4dir_128x128_phaser.png?v=030", { frameWidth: 128, frameHeight: 128 });
     this.load.image("auto_shop", "assets/buildings/auto_shop.png?v=030");
-    this.load.image("road_tiles", "assets/tiles/road_tiles_32x32.png?v=031");
-    this.load.spritesheet("mainstreet_props", "assets/props/mainstreet_props_64x64.png?v=031", { frameWidth: 64, frameHeight: 64 });
-    this.load.spritesheet("farmer_walk", "assets/zombies/farmer_walker_walk.png?v=031", { frameWidth: 256, frameHeight: 256 });
-    this.load.audio("bg_music", "assets/audio/Grain%20Silo%20Ghosts.mp3?v=032");
+    this.load.image("road_tiles", "assets/tiles/road_tiles_32x32.png?v=033");
+    this.load.spritesheet("mainstreet_props", "assets/props/mainstreet_props_64x64.png?v=033", { frameWidth: 64, frameHeight: 64 });
+    this.load.spritesheet("farmer_walk", "assets/zombies/farmer_walker_walk.png?v=033", { frameWidth: 256, frameHeight: 256 });
+    this.load.audio("bg_music", "assets/audio/Grain Silo Ghosts.mp3?v=033");
   }
 
   create(data) {
@@ -437,12 +453,12 @@ class MainStreetScene extends BaseScene {
     this.physics.add.existing(this.autoShopBlocker, true);
     this.enterAutoShop = this.add.rectangle(1150, 430, 86, 52, 0x111111);
     // Auto Shop exterior props from assets/props/mainstreet_props_64x64.png
-    this.makeSpriteProp(820, 420, 0, 1.45, 76, 48);      // tire stack
-    this.makeSpriteProp(930, 430, 3, 1.35, 72, 42);      // scrap pile
-    this.makeSpriteProp(1465, 420, 1, 1.55, 92, 56);     // dumpster
-    this.makeSpriteProp(1015, 438, 2, 1.15, 58, 42);     // tool crate
-    this.makeSpriteProp(750, 455, 4, 1.05, 42, 48);      // oil drum
-    this.makeSpriteProp(1100, 465, 6, 1.10, 62, 34);     // pallet
+    this.makeSpriteProp(820, 420, 0, 0.62, 46, 34);      // tire stack
+    this.makeSpriteProp(930, 430, 3, 0.62, 48, 30);      // scrap pile
+    this.makeSpriteProp(1465, 420, 1, 0.82, 62, 38);     // dumpster
+    this.makeSpriteProp(1015, 438, 2, 0.70, 42, 30);     // tool crate
+    this.makeSpriteProp(750, 455, 4, 0.68, 32, 38);      // oil drum
+    this.makeSpriteProp(1100, 465, 6, 0.72, 50, 26);     // pallet
 
     // Service-yard fence pieces.
     this.makeSpriteProp(850, 480, 18, 2.55, 250, 18);
@@ -458,22 +474,22 @@ class MainStreetScene extends BaseScene {
     this.makeBuilding(1900, 1140, 420, 220, "POLICE", true);
 
     // Street/house prop pass from sprite sheet.
-    this.makeSpriteProp(265, 685, 8, 1.35, 36, 70);      // stop sign
-    this.makeSpriteProp(1950, 690, 8, 1.35, 36, 70);     // stop sign
-    this.makeSpriteProp(520, 935, 9, 1.65, 26, 92);      // street light
-    this.makeSpriteProp(1680, 935, 9, 1.65, 26, 92);     // street light
-    this.makeSpriteProp(310, 1020, 10, 1.05, 42, 34);    // mailbox
-    this.makeSpriteProp(810, 1020, 10, 1.05, 42, 34);    // mailbox
-    this.makeSpriteProp(1270, 1015, 11, 1.05, 42, 46);   // trash can
-    this.makeSpriteProp(1580, 1015, 11, 1.05, 42, 46);   // trash can
+    this.makeSpriteProp(265, 685, 8, 0.88, 28, 52);      // stop sign
+    this.makeSpriteProp(1950, 690, 8, 0.88, 28, 52);     // stop sign
+    this.makeSpriteProp(520, 935, 9, 1.00, 22, 62);      // street light
+    this.makeSpriteProp(1680, 935, 9, 1.00, 22, 62);     // street light
+    this.makeSpriteProp(310, 1020, 10, 0.70, 34, 24);    // mailbox
+    this.makeSpriteProp(810, 1020, 10, 0.70, 34, 24);    // mailbox
+    this.makeSpriteProp(1270, 1015, 11, 0.70, 34, 34);   // trash can
+    this.makeSpriteProp(1580, 1015, 11, 0.70, 34, 34);   // trash can
     this.makeSpriteProp(455, 995, 16, 2.25, 190, 22);    // wood fence
     this.makeSpriteProp(965, 995, 16, 2.25, 190, 22);    // wood fence
     this.makeSpriteProp(1410, 1005, 16, 2.25, 190, 22);  // wood fence
     this.makeSpriteProp(1870, 1005, 16, 2.25, 190, 22);  // wood fence
-    this.makeSpriteProp(515, 475, 24, 2.45, 190, 76);    // abandoned pickup
-    this.makeSpriteProp(1210, 510, 25, 2.05, 140, 60);   // abandoned sedan
-    this.makeSpriteProp(1225, 1015, 20, 1.20, 52, 36);   // bush
-    this.makeSpriteProp(1815, 1015, 20, 1.20, 52, 36);   // bush
+    this.makeSpriteProp(515, 475, 24, 1.25, 100, 42);    // abandoned pickup
+    this.makeSpriteProp(1210, 510, 25, 1.10, 90, 38);   // abandoned sedan
+    this.makeSpriteProp(1225, 1015, 20, 0.75, 42, 28);   // bush
+    this.makeSpriteProp(1815, 1015, 20, 0.75, 42, 28);   // bush
   }
 
   makeBuilding(x, y, w, h, label, solid) {
@@ -626,9 +642,12 @@ class MainStreetScene extends BaseScene {
 class AutoShopInteriorScene extends BaseScene {
   constructor() { super("AutoShopInteriorScene"); }
   preload() {
+    this.load.on("loaderror", (file) => {
+      console.warn("Asset failed:", file && file.src);
+    });
     this.load.spritesheet("donny", "assets/characters/donny_walk_4dir_128x128_phaser.png?v=030", { frameWidth: 128, frameHeight: 128 });
     this.load.spritesheet("donny_punch", "assets/characters/donny_punch_4dir_128x128_phaser.png?v=030", { frameWidth: 128, frameHeight: 128 });
-    this.load.audio("bg_music", "assets/audio/Grain%20Silo%20Ghosts.mp3?v=032");
+    this.load.audio("bg_music", "assets/audio/Grain Silo Ghosts.mp3?v=033");
   }
   create() {
     this.setupMobile();
