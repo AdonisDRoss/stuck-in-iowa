@@ -40,7 +40,10 @@ const GameState = {
   musicOn: true,
   musicVolume: 0.45,
   bgMusic: null,
-  pausedMenuOpen: false
+  pausedMenuOpen: false,
+  hasPistol: true,
+  pistolEquipped: false,
+  isShooting: false
 };
 
 class BaseScene extends Phaser.Scene {
@@ -59,6 +62,7 @@ class BaseScene extends Phaser.Scene {
     this.player.body.setSize(42, 44);
     this.player.body.setOffset(43, 70);
     this.cameras.main.startFollow(this.player, true, 0.08, 0.08);
+    this.createWeaponOverlay();
   }
 
   createPlayerAnims() {
@@ -75,6 +79,10 @@ class BaseScene extends Phaser.Scene {
     make("punch_right", "donny_punch", 6, 11, 14, 0);
     make("punch_left", "donny_punch", 6, 11, 14, 0);
     make("punch_up", "donny_punch", 18, 23, 14, 0);
+    make("shoot_up", "donny_shoot", 0, 7, 12, 0);
+    make("shoot_right", "donny_shoot", 8, 15, 12, 0);
+    make("shoot_left", "donny_shoot", 8, 15, 12, 0);
+    make("shoot_down", "donny_shoot", 16, 23, 12, 0);
   }
 
   createHUD(versionText) {
@@ -118,19 +126,19 @@ class BaseScene extends Phaser.Scene {
   }
 
   createControls() {
-    this.stickBase = this.add.circle(135, 585, 70, 0x000000, 0.42).setScrollFactor(0).setDepth(1000);
-    this.stickKnob = this.add.circle(135, 585, 32, 0xffffff, 0.45).setScrollFactor(0).setDepth(1001);
-    this.stickHome = { x: 135, y: 585 };
+    this.stickBase = this.add.circle(135, 535, 70, 0x000000, 0.42).setScrollFactor(0).setDepth(1000);
+    this.stickKnob = this.add.circle(135, 535, 32, 0xffffff, 0.45).setScrollFactor(0).setDepth(1001);
+    this.stickHome = { x: 135, y: 535 };
     this.stickTouchId = null;
-    this.makeButton(1120, 505, "Y", "y");
-    this.makeButton(1060, 575, "X", "x");
-    this.makeButton(1180, 575, "B", "b");
-    this.makeButton(1120, 645, "A", "a");
-    const selectHit = this.add.rectangle(1060, 650, 88, 34, 0x000000, 0.01).setInteractive().setScrollFactor(0).setDepth(1000);
-    const startHit = this.add.rectangle(1190, 650, 88, 34, 0x000000, 0.01).setInteractive().setScrollFactor(0).setDepth(1000);
+    this.makeButton(1120, 455, "Y", "y");
+    this.makeButton(1060, 525, "X", "x");
+    this.makeButton(1180, 525, "B", "b");
+    this.makeButton(1120, 595, "A", "a");
+    const selectHit = this.add.rectangle(1060, 610, 88, 34, 0x000000, 0.01).setInteractive().setScrollFactor(0).setDepth(1000);
+    const startHit = this.add.rectangle(1190, 610, 88, 34, 0x000000, 0.01).setInteractive().setScrollFactor(0).setDepth(1000);
 
-    this.add.text(1060, 650, "SELECT", { fontSize: "13px", color: "#ffffff", fontFamily: "Arial" }).setOrigin(0.5).setScrollFactor(0).setDepth(1001);
-    this.add.text(1190, 650, "START", { fontSize: "13px", color: "#ffffff", fontFamily: "Arial" }).setOrigin(0.5).setScrollFactor(0).setDepth(1001);
+    this.add.text(1060, 610, "SELECT", { fontSize: "13px", color: "#ffffff", fontFamily: "Arial" }).setOrigin(0.5).setScrollFactor(0).setDepth(1001);
+    this.add.text(1190, 610, "START", { fontSize: "13px", color: "#ffffff", fontFamily: "Arial" }).setOrigin(0.5).setScrollFactor(0).setDepth(1001);
 
     // Big visible pause button for mobile testing.
     const pauseBtn = this.add.rectangle(1180, 55, 120, 44, 0x000000, 0.62)
@@ -156,6 +164,7 @@ class BaseScene extends Phaser.Scene {
       this.ensureMusic(true);
       if (key === "a") this.tryInteract();
       if (key === "x") this.attack();
+      if (key === "b") this.shootPistol();
     });
     btn.on("pointerup", () => { this.mobile[key] = false; });
     btn.on("pointerout", () => { this.mobile[key] = false; });
@@ -191,9 +200,9 @@ class BaseScene extends Phaser.Scene {
     if (!found) {
       this.stickTouchId = null;
       this.mobile.left = false; this.mobile.right = false; this.mobile.up = false; this.mobile.down = false;
-      this.stickHome.x = 135; this.stickHome.y = 585;
-      this.stickBase.x = 135; this.stickBase.y = 585;
-      this.stickKnob.x = 135; this.stickKnob.y = 585;
+      this.stickHome.x = 135; this.stickHome.y = 535;
+      this.stickBase.x = 135; this.stickBase.y = 535;
+      this.stickKnob.x = 135; this.stickKnob.y = 535;
     }
   }
 
@@ -270,33 +279,43 @@ class BaseScene extends Phaser.Scene {
       fontFamily: "Arial"
     }).setOrigin(0.5);
 
-    const downBtn = this.add.rectangle(-100, 85, 80, 44, 0x333333, 0.95)
+    const equipBtn = this.add.rectangle(0, 72, 260, 44, 0x333333, 0.95)
+      .setInteractive()
+      .on("pointerdown", () => this.togglePistolEquip());
+
+    this.pistolStatusText = this.add.text(0, 72, "", {
+      fontSize: "17px",
+      color: "#ffffff",
+      fontFamily: "Arial"
+    }).setOrigin(0.5);
+
+    const downBtn = this.add.rectangle(-100, 125, 80, 44, 0x333333, 0.95)
       .setInteractive()
       .on("pointerdown", () => this.changeMusicVolume(-0.10));
 
-    const upBtn = this.add.rectangle(100, 85, 80, 44, 0x333333, 0.95)
+    const upBtn = this.add.rectangle(100, 125, 80, 44, 0x333333, 0.95)
       .setInteractive()
       .on("pointerdown", () => this.changeMusicVolume(0.10));
 
-    const downTxt = this.add.text(-100, 85, "- VOL", {
+    const downTxt = this.add.text(-100, 125, "- VOL", {
       fontSize: "16px",
       color: "#ffffff",
       fontFamily: "Arial"
     }).setOrigin(0.5);
 
-    const upTxt = this.add.text(100, 85, "+ VOL", {
+    const upTxt = this.add.text(100, 125, "+ VOL", {
       fontSize: "16px",
       color: "#ffffff",
       fontFamily: "Arial"
     }).setOrigin(0.5);
 
-    const close = this.add.text(0, 145, "Press START / P to return", {
+    const close = this.add.text(0, 160, "Press START / P to return", {
       fontSize: "15px",
       color: "#bbbbbb",
       fontFamily: "Arial"
     }).setOrigin(0.5);
 
-    box.add([bg, title, song, this.musicStatusText, toggleBtn, toggleTxt, downBtn, upBtn, downTxt, upTxt, close]);
+    box.add([bg, title, song, this.musicStatusText, toggleBtn, toggleTxt, equipBtn, this.pistolStatusText, downBtn, upBtn, downTxt, upTxt, close]);
     this.pauseMenu = box;
     this.updatePauseMenuText();
   }
@@ -312,6 +331,7 @@ class BaseScene extends Phaser.Scene {
     if (!this.musicStatusText) return;
     const pct = Math.round(GameState.musicVolume * 100);
     this.musicStatusText.setText("Music: " + (GameState.musicOn ? "ON" : "OFF") + "   Volume: " + pct + "%");
+    if (this.pistolStatusText) this.pistolStatusText.setText("Pistol: " + (GameState.pistolEquipped ? "EQUIPPED" : "OFF"));
   }
 
   toggleMusic() {
@@ -329,6 +349,61 @@ class BaseScene extends Phaser.Scene {
       GameState.bgMusic.setVolume(GameState.musicOn ? GameState.musicVolume : 0);
     }
     this.updatePauseMenuText();
+  }
+
+
+  createWeaponOverlay() {
+    if (!this.textures.exists("pistol") || !this.player) return;
+    this.pistolSprite = this.add.image(this.player.x, this.player.y, "pistol");
+    this.pistolSprite.setVisible(false);
+    this.pistolSprite.setScale(0.055);
+    this.pistolSprite.setDepth(999);
+  }
+
+  togglePistolEquip() {
+    GameState.pistolEquipped = !GameState.pistolEquipped;
+    this.updatePauseMenuText();
+  }
+
+  shootPistol() {
+    if (!this.player || !GameState.pistolEquipped || this.isShooting) return;
+    this.isShooting = true;
+    this.isAttacking = true;
+    this.player.setTexture("donny_shoot");
+    this.player.setFlipX(this.facing === "left");
+    this.player.anims.play("shoot_" + this.facing, true);
+    this.updatePistolOverlay(true);
+
+    const bx = this.player.x + (this.facing === "left" ? -80 : this.facing === "right" ? 80 : 0);
+    const by = this.player.y + (this.facing === "up" ? -80 : this.facing === "down" ? 80 : 0);
+    const flash = this.add.circle(bx, by, 10, 0xffcc33, 0.65).setDepth(2000);
+    this.time.delayedCall(70, () => flash.destroy());
+
+    this.player.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
+      this.isShooting = false;
+      this.isAttacking = false;
+      this.player.setTexture("donny");
+      this.player.setFlipX(false);
+      this.updatePistolOverlay(false);
+    });
+  }
+
+  updatePistolOverlay(show = GameState.pistolEquipped && GameState.isShooting) {
+    if (!this.pistolSprite || !this.player) return;
+    const offsets = {
+      right: { x: 43, y: -18, angle: 0, flipX: false, scale: 0.055 },
+      left:  { x: -43, y: -18, angle: 0, flipX: true,  scale: 0.055 },
+      up:    { x: 12, y: -46, angle: -90, flipX: false, scale: 0.052 },
+      down:  { x: 16, y: 24, angle: 90, flipX: false, scale: 0.052 }
+    };
+    const o = offsets[this.facing] || offsets.right;
+    this.pistolSprite.setVisible(show);
+    this.pistolSprite.x = this.player.x + o.x;
+    this.pistolSprite.y = this.player.y + o.y;
+    this.pistolSprite.setAngle(o.angle);
+    this.pistolSprite.setFlipX(o.flipX);
+    this.pistolSprite.setScale(o.scale);
+    this.pistolSprite.setDepth(this.player.depth + 1);
   }
 
   handlePlayerMovement(colliders) {
@@ -352,6 +427,7 @@ class BaseScene extends Phaser.Scene {
       else if (down) this.player.anims.play("walk_down", true);
       else this.player.anims.stop();
     }
+    this.updatePistolOverlay(GameState.pistolEquipped && this.isShooting);
   }
 
   attack() {
@@ -396,7 +472,10 @@ class MainStreetScene extends BaseScene {
     });
     this.load.spritesheet("donny", "assets/characters/donny_walk_4dir_128x128_phaser.png?v=030", { frameWidth: 128, frameHeight: 128 });
     this.load.spritesheet("donny_punch", "assets/characters/donny_punch_4dir_128x128_phaser.png?v=030", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_shoot", "assets/characters/donny_shoot_empty_128x128.png?v=036", { frameWidth: 128, frameHeight: 128 });
+    this.load.image("pistol", "assets/weapons/pistol.png?v=036");
     this.load.image("auto_shop", "assets/buildings/auto_shop.png?v=030");
+    this.load.image("auto_repair_sign", "assets/signs/auto_repair_sign.png?v=037");
     this.load.image("road_tiles", "assets/tiles/road_tiles_32x32.png?v=033");
     this.load.spritesheet("mainstreet_props", "assets/props/mainstreet_props_64x64.png?v=033", { frameWidth: 64, frameHeight: 64 });
     this.load.spritesheet("farmer_walk", "assets/zombies/farmer_walker_walk.png?v=033", { frameWidth: 256, frameHeight: 256 });
@@ -416,8 +495,8 @@ class MainStreetScene extends BaseScene {
     this.createPlayerAnims();
     this.createJim();
     this.createZombie();
-    this.keys = this.input.keyboard.addKeys({ up:"W", down:"S", left:"A", right:"D", interact:"E", attack:"SPACE", pause:"P", music:"M" });
-    this.createHUD("v0.3.4 - Interior Background + Left Punch Fix");
+    this.keys = this.input.keyboard.addKeys({ up:"W", down:"S", left:"A", right:"D", interact:"E", attack:"SPACE", shoot:"F", pause:"P", music:"M" });
+    this.createHUD("v0.3.7 - Door Entry + Pistol Equip");
     this.createControls();
     this.ensureMusic();
     this.input.once("pointerdown", () => this.ensureMusic(true));
@@ -457,9 +536,12 @@ class MainStreetScene extends BaseScene {
     this.makeBuilding(250, 260, 300, 220, "GAS", true);
     this.makeBuilding(680, 260, 330, 220, "DINER", true);
     this.autoShopSprite = this.add.image(1150, 260, "auto_shop").setDisplaySize(720, 340);
+    this.add.image(1115, 205, "auto_repair_sign").setScale(0.34).setDepth(900);
+    this.autoShopDoorZone = this.add.zone(965, 425, 72, 100);
+    this.physics.add.existing(this.autoShopDoorZone, true);
     this.autoShopBlocker = this.add.rectangle(1150, 245, 680, 220, 0xff0000, 0);
     this.physics.add.existing(this.autoShopBlocker, true);
-    this.enterAutoShop = this.add.rectangle(1150, 430, 86, 52, 0x111111);
+    this.enterAutoShop = this.add.rectangle(965, 430, 52, 52, 0x111111, 0.01);
     // Auto Shop exterior props from assets/props/mainstreet_props_64x64.png
     this.makeSpriteProp(820, 420, 0, 0.62, 46, 34);      // tire stack
     this.makeSpriteProp(930, 430, 3, 0.62, 48, 30);      // scrap pile
@@ -575,8 +657,8 @@ class MainStreetScene extends BaseScene {
       }
       return;
     }
-    const dDoor = Phaser.Math.Distance.Between(this.player.x, this.player.y, 1150, 430);
-    if (dDoor < 100) {
+    const dDoor = Phaser.Math.Distance.Between(this.player.x, this.player.y, 965, 430);
+    if (dDoor < 85) {
       this.scene.start("AutoShopInteriorScene");
       return;
     }
@@ -639,6 +721,8 @@ class MainStreetScene extends BaseScene {
     if (Phaser.Input.Keyboard.JustDown(this.keys.interact)) this.tryInteract();
     if (Phaser.Input.Keyboard.JustDown(this.keys.attack)) this.attack();
     this.handlePlayerMovement([this.autoShopBlocker, this.solidObjects]);
+    if (this.physics.overlap(this.player, this.autoShopDoorZone)) { this.scene.start("AutoShopInteriorScene"); return; }
+    if (Phaser.Input.Keyboard.JustDown(this.keys.shoot)) this.shootPistol();
     this.updateZombie();
     this.updateJimFollow();
     GameState.minutes += 0.03;
@@ -655,6 +739,8 @@ class AutoShopInteriorScene extends BaseScene {
     });
     this.load.spritesheet("donny", "assets/characters/donny_walk_4dir_128x128_phaser.png?v=030", { frameWidth: 128, frameHeight: 128 });
     this.load.spritesheet("donny_punch", "assets/characters/donny_punch_4dir_128x128_phaser.png?v=030", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_shoot", "assets/characters/donny_shoot_empty_128x128.png?v=036", { frameWidth: 128, frameHeight: 128 });
+    this.load.image("pistol", "assets/weapons/pistol.png?v=036");
     this.load.image("auto_shop_interior_bg", "assets/interiors/auto_shop_empty_interior.png?v=034");
     this.load.image("auto_shop_interior_props", "assets/props/auto_shop_interior_props.png?v=034");
     this.load.audio("bg_music", "assets/audio/Grain Silo Ghosts.mp3?v=033");
@@ -667,8 +753,8 @@ class AutoShopInteriorScene extends BaseScene {
     this.makeInterior();
     this.createPlayer(640, 560);
     this.createPlayerAnims();
-    this.keys = this.input.keyboard.addKeys({ up:"W", down:"S", left:"A", right:"D", interact:"E", attack:"SPACE", pause:"P", music:"M" });
-    this.createHUD("v0.3.4 - Empty Auto Shop Interior");
+    this.keys = this.input.keyboard.addKeys({ up:"W", down:"S", left:"A", right:"D", interact:"E", attack:"SPACE", shoot:"F", pause:"P", music:"M" });
+    this.createHUD("v0.3.7 - Interior + Pistol Equip");
     this.createControls();
     this.ensureMusic();
     this.input.once("pointerdown", () => this.ensureMusic(true));
@@ -732,6 +818,7 @@ class AutoShopInteriorScene extends BaseScene {
     }
     if (Phaser.Input.Keyboard.JustDown(this.keys.interact)) this.tryInteract();
     if (Phaser.Input.Keyboard.JustDown(this.keys.attack)) this.attack();
+    if (Phaser.Input.Keyboard.JustDown(this.keys.shoot)) this.shootPistol();
     this.handlePlayerMovement([this.solidObjects]);
     GameState.minutes += 0.02;
     if (GameState.minutes >= 1440) { GameState.minutes = 0; GameState.day += 1; }
