@@ -137,426 +137,18 @@ class BaseScene extends Phaser.Scene {
     this.add.text(1060, 610, "SELECT", { fontSize: "13px", color: "#ffffff", fontFamily: "Arial" }).setOrigin(0.5).setScrollFactor(0).setDepth(1001);
     this.add.text(1190, 610, "START", { fontSize: "13px", color: "#ffffff", fontFamily: "Arial" }).setOrigin(0.5).setScrollFactor(0).setDepth(1001);
 
-    // Big visible pause button for mobile testing.
-    const pauseBtn = this.add.rectangle(1180, 55, 120, 44, 0x000000, 0.62)
-      .setInteractive()
-      .setScrollFactor(0)
-      .setDepth(1500);
-    this.add.text(1180, 55, "PAUSE", {
-      fontSize: "18px",
-      color: "#ffffff",
-      fontFamily: "Arial"
-    }).setOrigin(0.5).setScrollFactor(0).setDepth(1501);
+    // North-side storefront run. Buildings are taller, lower on the pavement, and signs sit closer to the roofs.
+  this.placeStoreBuilding({ key: "diner", label: "Diner", x: 330, y: 336, w: 390, h: 245, doorX: 330, doorY: 486, signFrame: 1, signOffsetY: -56, signScale: 0.24, spawn: { x: 330, y: 540 } });
+  this.placeStoreBuilding({ key: "hardware", image: "hardware_store", label: "Hardware", x: 790, y: 336, w: 390, h: 245, doorX: 790, doorY: 486, signFrame: 2, signOffsetY: -56, signScale: 0.24, spawn: { x: 790, y: 540 } });
+  this.placeStoreBuilding({ key: "pharmacy", label: "Pharmacy", x: 1680, y: 336, w: 390, h: 245, doorX: 1680, doorY: 486, signFrame: 3, signOffsetY: -56, signScale: 0.24, spawn: { x: 1680, y: 540 } });
+  this.placeStoreBuilding({ key: "music", image: "music_store", label: "Music Store", x: 2120, y: 336, w: 390, h: 245, doorX: 2120, doorY: 486, signFrame: 4, signOffsetY: -56, signScale: 0.24, spawn: { x: 2120, y: 540 } });
 
-    selectHit.on("pointerdown", () => this.toggleMusic());
-    startHit.on("pointerdown", () => this.togglePauseMenu());
-    pauseBtn.on("pointerdown", () => this.togglePauseMenu());
-  }
-
-  makeButton(x, y, label, key) {
-    const btn = this.add.circle(x, y, 38, 0x333333, 0.72).setInteractive().setScrollFactor(0).setDepth(1000);
-    this.add.text(x, y, label, { fontSize: "24px", color: "#ffffff", fontFamily: "Arial" }).setOrigin(0.5).setScrollFactor(0).setDepth(1001);
-    btn.on("pointerdown", () => {
-      this.mobile[key] = true;
-      this.ensureMusic(true);
-      if (key === "a") this.tryInteract();
-      if (key === "x") this.attack();
-      if (key === "b") this.shootPistol();
-    });
-    btn.on("pointerup", () => { this.mobile[key] = false; });
-    btn.on("pointerout", () => { this.mobile[key] = false; });
-  }
-
-  handleVirtualStick() {
-    let found = false;
-    for (const p of this.input.manager.pointers) {
-      if (!p || !p.isDown) continue;
-      if (p.x < 480) {
-        found = true;
-        if (this.stickTouchId === null) {
-          this.stickTouchId = p.id;
-          this.stickHome.x = p.x;
-          this.stickHome.y = p.y;
-          this.stickBase.x = p.x;
-          this.stickBase.y = p.y;
-        }
-        if (this.stickTouchId === p.id) {
-          const dx = p.x - this.stickHome.x;
-          const dy = p.y - this.stickHome.y;
-          this.mobile.left = dx < -18;
-          this.mobile.right = dx > 18;
-          this.mobile.up = dy < -18;
-          this.mobile.down = dy > 18;
-          const dist = Math.min(48, Math.sqrt(dx * dx + dy * dy));
-          const angle = Math.atan2(dy, dx);
-          this.stickKnob.x = this.stickHome.x + Math.cos(angle) * dist;
-          this.stickKnob.y = this.stickHome.y + Math.sin(angle) * dist;
-        }
-      }
-    }
-    if (!found) {
-      this.stickTouchId = null;
-      this.mobile.left = false; this.mobile.right = false; this.mobile.up = false; this.mobile.down = false;
-      this.stickHome.x = 135; this.stickHome.y = 535;
-      this.stickBase.x = 135; this.stickBase.y = 535;
-      this.stickKnob.x = 135; this.stickKnob.y = 535;
-    }
-  }
-
-  makeDialogue(title, body) {
-    if (this.dialogueBox) this.dialogueBox.destroy();
-    const box = this.add.container(640, 610).setScrollFactor(0).setDepth(2000);
-    const bg = this.add.rectangle(0, 0, 760, 120, 0x000000, 0.78).setStrokeStyle(2, 0xffffff, 0.35);
-    const t = this.add.text(-360, -48, title, { fontSize: "20px", color: "#ffff00", fontFamily: "Arial" });
-    const b = this.add.text(-360, -15, body + "\n\nPress A / E", { fontSize: "16px", color: "#ffffff", fontFamily: "Arial", wordWrap: { width: 710 } });
-    box.add([bg, t, b]);
-    this.dialogueBox = box;
-    this.time.delayedCall(3500, () => { if (box && box.active) box.destroy(); });
-  }
-
-
-  ensureMusic(forcePlay = false) {
-    if (!this.sound) return;
-
-    if (!GameState.bgMusic) {
-      GameState.bgMusic = this.sound.add("bg_music", {
-        loop: true,
-        volume: GameState.musicVolume
-      });
-    }
-
-    GameState.bgMusic.setVolume(GameState.musicOn ? GameState.musicVolume : 0);
-
-    if ((GameState.musicOn || forcePlay) && !GameState.bgMusic.isPlaying) {
-      GameState.bgMusic.play();
-    }
-  }
-
-  togglePauseMenu() {
-    GameState.pausedMenuOpen = !GameState.pausedMenuOpen;
-
-    if (GameState.pausedMenuOpen) {
-      this.showPauseMenu();
-    } else {
-      this.hidePauseMenu();
-    }
-  }
-
-  showPauseMenu() {
-    if (this.pauseMenu) this.pauseMenu.destroy();
-
-    const box = this.add.container(640, 360).setScrollFactor(0).setDepth(3000);
-    const bg = this.add.rectangle(0, 0, 620, 360, 0x000000, 0.86).setStrokeStyle(2, 0xffffff, 0.45);
-
-    const title = this.add.text(0, -140, "PAUSED", {
-      fontSize: "34px",
-      color: "#ffff00",
-      fontFamily: "Arial"
-    }).setOrigin(0.5);
-
-    const song = this.add.text(0, -95, "Music: Grain Silo Ghosts", {
-      fontSize: "18px",
-      color: "#ffffff",
-      fontFamily: "Arial"
-    }).setOrigin(0.5);
-
-    this.musicStatusText = this.add.text(0, -45, "", {
-      fontSize: "20px",
-      color: "#d6ffd6",
-      fontFamily: "Arial"
-    }).setOrigin(0.5);
-
-    const toggleBtn = this.add.rectangle(0, 20, 260, 44, 0x333333, 0.95)
-      .setInteractive()
-      .on("pointerdown", () => this.toggleMusic());
-
-    const toggleTxt = this.add.text(0, 20, "MUSIC ON / OFF", {
-      fontSize: "17px",
-      color: "#ffffff",
-      fontFamily: "Arial"
-    }).setOrigin(0.5);
-
-    const equipBtn = this.add.rectangle(0, 72, 260, 44, 0x333333, 0.95)
-      .setInteractive()
-      .on("pointerdown", () => this.togglePistolEquip());
-
-    this.pistolStatusText = this.add.text(0, 72, "", {
-      fontSize: "17px",
-      color: "#ffffff",
-      fontFamily: "Arial"
-    }).setOrigin(0.5);
-
-    const downBtn = this.add.rectangle(-100, 125, 80, 44, 0x333333, 0.95)
-      .setInteractive()
-      .on("pointerdown", () => this.changeMusicVolume(-0.10));
-
-    const upBtn = this.add.rectangle(100, 125, 80, 44, 0x333333, 0.95)
-      .setInteractive()
-      .on("pointerdown", () => this.changeMusicVolume(0.10));
-
-    const downTxt = this.add.text(-100, 125, "- VOL", {
-      fontSize: "16px",
-      color: "#ffffff",
-      fontFamily: "Arial"
-    }).setOrigin(0.5);
-
-    const upTxt = this.add.text(100, 125, "+ VOL", {
-      fontSize: "16px",
-      color: "#ffffff",
-      fontFamily: "Arial"
-    }).setOrigin(0.5);
-
-    const close = this.add.text(0, 160, "Press START / P to return", {
-      fontSize: "15px",
-      color: "#bbbbbb",
-      fontFamily: "Arial"
-    }).setOrigin(0.5);
-
-    box.add([bg, title, song, this.musicStatusText, toggleBtn, toggleTxt, equipBtn, this.pistolStatusText, downBtn, upBtn, downTxt, upTxt, close]);
-    this.pauseMenu = box;
-    this.updatePauseMenuText();
-  }
-
-  hidePauseMenu() {
-    if (this.pauseMenu) {
-      this.pauseMenu.destroy();
-      this.pauseMenu = null;
-    }
-  }
-
-  updatePauseMenuText() {
-    if (!this.musicStatusText) return;
-    const pct = Math.round(GameState.musicVolume * 100);
-    this.musicStatusText.setText("Music: " + (GameState.musicOn ? "ON" : "OFF") + "   Volume: " + pct + "%");
-    if (this.pistolStatusText) this.pistolStatusText.setText("Pistol: " + (GameState.pistolEquipped ? "EQUIPPED" : "OFF"));
-  }
-
-  toggleMusic() {
-    GameState.musicOn = !GameState.musicOn;
-    this.ensureMusic(true);
-    if (GameState.bgMusic) {
-      GameState.bgMusic.setVolume(GameState.musicOn ? GameState.musicVolume : 0);
-    }
-    this.updatePauseMenuText();
-  }
-
-  changeMusicVolume(amount) {
-    GameState.musicVolume = Phaser.Math.Clamp(GameState.musicVolume + amount, 0, 1);
-    if (GameState.bgMusic) {
-      GameState.bgMusic.setVolume(GameState.musicOn ? GameState.musicVolume : 0);
-    }
-    this.updatePauseMenuText();
-  }
-
-
-  createWeaponOverlay() {
-    if (!this.textures.exists("pistol") || !this.player) return;
-    this.pistolSprite = this.add.image(this.player.x, this.player.y, "pistol");
-    this.pistolSprite.setVisible(false);
-    this.pistolSprite.setOrigin(0.5, 0.5);
-    this.pistolSprite.setScale(0.26);
-    this.pistolSprite.setDepth(2001);
-  }
-
-  togglePistolEquip() {
-    GameState.pistolEquipped = !GameState.pistolEquipped;
-    if (!GameState.pistolEquipped) this.updatePistolOverlay(false);
-    this.updatePauseMenuText();
-  }
-
-  getPistolPose(face) {
-    // Pistol image is treated as left-facing by default. FlipX makes it fire right.
-    const poses = {
-      right: { x: 48, y: -17, angle: 0,   flipX: true,  scale: 0.26, flashX: 82,  flashY: -17 },
-      left:  { x: -48, y: -17, angle: 0,   flipX: false, scale: 0.26, flashX: -82, flashY: -17 },
-      up:    { x: 12, y: -52, angle: 90,  flipX: false, scale: 0.24, flashX: 12,  flashY: -88 },
-      down:  { x: 16, y: 24,  angle: -90, flipX: false, scale: 0.24, flashX: 16,  flashY: 66 }
-    };
-    return poses[face] || poses.right;
-  }
-
-  shootPistol() {
-    if (!this.player || !GameState.pistolEquipped || this.isShooting) return;
-
-    const shotFace = this.facing || "right";
-    this.shotFacing = shotFace;
-    this.isShooting = true;
-    this.isAttacking = true;
-
-    // Hold Donny on the extended-arm punch frame while the pistol is visible.
-    this.player.setTexture("donny_punch");
-    this.player.setFlipX(shotFace === "left");
-    const holdFrame = shotFace === "up" ? 22 : shotFace === "down" ? 4 : 10;
-    this.player.anims.stop();
-    this.player.setFrame(holdFrame);
-
-    this.updatePistolOverlay(true, shotFace);
-
-    const p = this.getPistolPose(shotFace);
-    const flash = this.add.circle(
-      this.player.x + p.flashX,
-      this.player.y + p.flashY,
-      10,
-      0xffcc33,
-      0.75
-    ).setDepth(2002);
-    this.time.delayedCall(90, () => flash.destroy());
-
-    this.time.delayedCall(1500, () => {
-      if (this.shotFacing !== shotFace) return;
-      this.isShooting = false;
-      this.isAttacking = false;
-      this.shotFacing = null;
-      this.player.setTexture("donny");
-      this.player.setFlipX(false);
-      this.updatePistolOverlay(false);
-    });
-  }
-
-  updatePistolOverlay(show = false, face = this.facing) {
-    if (!this.pistolSprite || !this.player) return;
-    if (!show) {
-      this.pistolSprite.setVisible(false);
-      return;
-    }
-
-    const o = this.getPistolPose(face || this.facing || "right");
-    this.pistolSprite.setVisible(true);
-    this.pistolSprite.x = this.player.x + o.x;
-    this.pistolSprite.y = this.player.y + o.y;
-    this.pistolSprite.setAngle(o.angle);
-    this.pistolSprite.setFlipX(o.flipX);
-    this.pistolSprite.setScale(o.scale);
-    this.pistolSprite.setDepth(2001);
-  }
-
-  handlePlayerMovement(colliders) {
-    const speed = 240;
-    this.player.setVelocity(0);
-    const left = this.keys.left.isDown || this.mobile.left;
-    const right = this.keys.right.isDown || this.mobile.right;
-    const up = this.keys.up.isDown || this.mobile.up;
-    const down = this.keys.down.isDown || this.mobile.down;
-    if (left) this.player.setVelocityX(-speed);
-    if (right) this.player.setVelocityX(speed);
-    if (up) this.player.setVelocityY(-speed);
-    if (down) this.player.setVelocityY(speed);
-    this.player.body.velocity.normalize().scale(speed);
-    if (colliders) colliders.forEach(obj => { if (obj) this.physics.collide(this.player, obj); });
-    if (left) this.facing = "left"; else if (right) this.facing = "right"; else if (up) this.facing = "up"; else if (down) this.facing = "down";
-    if (!this.isAttacking) {
-      if (left) this.player.anims.play("walk_left", true);
-      else if (right) this.player.anims.play("walk_right", true);
-      else if (up) this.player.anims.play("walk_up", true);
-      else if (down) this.player.anims.play("walk_down", true);
-      else this.player.anims.stop();
-    }
-    if (this.isShooting) this.updatePistolOverlay(true, this.shotFacing); else this.updatePistolOverlay(false);
-  }
-
-  attack() {
-    if (this.attackCooldown || !this.player) return;
-    this.attackCooldown = true;
-    this.time.delayedCall(350, () => { this.attackCooldown = false; });
-    this.isAttacking = true;
-    this.player.setTexture("donny_punch");
-
-    if (this.facing === "left") {
-      this.player.setFlipX(true);
-    } else {
-      this.player.setFlipX(false);
-    }
-
-    this.player.anims.play("punch_" + this.facing, true);
-    this.player.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
-      this.isAttacking = false;
-      this.player.setTexture("donny");
-      this.player.setFlipX(false);
-    });
-    const slash = this.add.circle(this.player.x, this.player.y, 80, 0xffffff, 0.18);
-    this.time.delayedCall(120, () => slash.destroy());
-    if (this.zombie && this.zombie.active && !GameState.zombieDead) {
-      const d = Phaser.Math.Distance.Between(this.player.x, this.player.y, this.zombie.x, this.zombie.y);
-      if (d < 120) {
-        this.zombie.hp -= 25;
-        this.zombie.setTint(0x99ff99);
-        this.time.delayedCall(100, () => { if (this.zombie && this.zombie.active) this.zombie.clearTint(); });
-        if (this.zombie.hp <= 0) this.killZombie();
-      }
-    }
-  }
-}
-
-class MainStreetScene extends BaseScene {
-  constructor() { super("MainStreetScene"); }
-
-  preload() {
-    this.load.on("loaderror", (file) => {
-      console.warn("Asset failed:", file && file.src);
-    });
-    this.load.spritesheet("donny", "assets/characters/donny_walk_4dir_128x128_phaser.png?v=030", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("donny_punch", "assets/characters/donny_punch_4dir_128x128_phaser.png?v=030", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("jim_walk", "assets/characters/jim_walk_4dir_128x128_phaser.png?v=052", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("jim_punch", "assets/characters/jim_punch_4dir_128x128_phaser.png?v=052", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("jim_hurt_ko", "assets/characters/jim_hurt_ko_4dir_128x128_phaser.png?v=052", { frameWidth: 128, frameHeight: 128 });
-    this.load.image("pistol", "assets/weapons/pistol.png?v=042");
-    this.load.image("auto_shop", "assets/buildings/auto_shop.png?v=030");
-    this.load.image("diner", "assets/buildings/diner.png?v=050");
-    this.load.image("hardware_store", "assets/buildings/hardware_store.png?v=050");
-    this.load.image("pharmacy", "assets/buildings/pharmacy.png?v=050");
-    this.load.image("music_store", "assets/buildings/music_store.png?v=050");
-    this.load.spritesheet("store_signs", "assets/signs/store_signs_256x128.png?v=050", { frameWidth: 256, frameHeight: 128 });
-    this.load.image("road_tiles", "assets/tiles/road_tiles_32x32.png?v=033");
-    this.load.image("mainstreet_bg", "assets/maps/mainstreet_bg.png?v=048");
-    this.load.spritesheet("mainstreet_large_props", "assets/props/mainstreet_large_props_256x128.png?v=041", { frameWidth: 256, frameHeight: 128 });
-    this.load.spritesheet("mainstreet_small_props", "assets/props/mainstreet_small_props_128x128.png?v=041", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("zombie_worker_walk", "assets/zombies/zombie_worker_walk.png?v=049", { frameWidth: 182, frameHeight: 180 });
-    this.load.spritesheet("zombie_worker_attack", "assets/zombies/zombie_worker_attack.png?v=049", { frameWidth: 182, frameHeight: 180 });
-    this.load.spritesheet("zombie_worker_hurt_ko", "assets/zombies/zombie_worker_hurt_ko.png?v=049", { frameWidth: 182, frameHeight: 180 });
-    this.load.audio("bg_music", "assets/audio/Grain Silo Ghosts.mp3?v=033");
-  }
-
-  create(data) {
-    this.setupMobile();
-    this.worldW = 2400; this.worldH = 1400;
-    this.physics.world.setBounds(0, 0, this.worldW, this.worldH);
-    this.cameras.main.setBounds(0, 0, this.worldW, this.worldH);
-    this.solidObjects = this.physics.add.staticGroup();
-    this.makeMap();
-    const spawn = (data && data.spawn) ? data.spawn : (data && data.fromInterior ? { x: 965, y: 520 } : { x: 1200, y: 720 });
-    this.createPlayer(spawn.x, spawn.y);
-    this.createPlayerAnims();
-    this.createJimAnims();
-    this.createJim();
-    this.createZombieAnims();
-    this.createZombie();
-    this.keys = this.input.keyboard.addKeys({ up:"W", down:"S", left:"A", right:"D", interact:"E", attack:"SPACE", shoot:"F", pause:"P", music:"M" });
-    this.createHUD("v0.5.2 - Jim + Storefront Fix");
-    this.createControls();
-    this.ensureMusic();
-    this.input.once("pointerdown", () => this.ensureMusic(true));
-  }
-
-
-makeMap() {
-  this.add.image(this.worldW / 2, this.worldH / 2, "mainstreet_bg")
-    .setDisplaySize(this.worldW, this.worldH)
-    .setDepth(-100);
-
-  this.storeDoorZones = [];
-
-  // Main Street north-side storefront run.
-  this.placeStoreBuilding({ key: "diner", label: "Diner", x: 330, y: 255, w: 470, h: 240, doorX: 330, doorY: 435, signFrame: 1, spawn: { x: 330, y: 525 } });
-  this.placeStoreBuilding({ key: "hardware", image: "hardware_store", label: "Hardware", x: 770, y: 255, w: 470, h: 240, doorX: 770, doorY: 435, signFrame: 2, spawn: { x: 770, y: 525 } });
-  this.placeStoreBuilding({ key: "pharmacy", label: "Pharmacy", x: 1670, y: 255, w: 470, h: 240, doorX: 1670, doorY: 435, signFrame: 3, spawn: { x: 1670, y: 525 } });
-  this.placeStoreBuilding({ key: "music", image: "music_store", label: "Music Store", x: 2110, y: 255, w: 470, h: 240, doorX: 2110, doorY: 435, signFrame: 4, spawn: { x: 2110, y: 525 } });
-
-  // Jim's auto shop remains the current mission hub.
-  this.autoShopSprite = this.add.image(1220, 255, "auto_shop").setDisplaySize(580, 275).setDepth(240);
-  this.add.image(1220, 150, "store_signs", 0).setScale(0.30).setDepth(900);
-  this.autoShopDoorZone = this.add.zone(1045, 425, 72, 100);
+  // Auto shop is reduced, lowered into its pad, and its sign sits near the roofline.
+  this.autoShopSprite = this.add.image(1235, 334, "auto_shop").setDisplaySize(500, 250).setDepth(359);
+  this.add.image(1235, 278, "store_signs", 0).setScale(0.25).setDepth(900);
+  this.autoShopDoorZone = this.add.zone(1060, 486, 72, 104);
   this.physics.add.existing(this.autoShopDoorZone, true);
-  this.autoShopBlocker = this.add.rectangle(1220, 235, 540, 165, 0xff0000, 0);
+  this.autoShopBlocker = this.add.rectangle(1235, 297, 472, 146, 0xff0000, 0);
   this.physics.add.existing(this.autoShopBlocker, true);
   this.solidObjects.add(this.autoShopBlocker);
 
@@ -580,15 +172,18 @@ placeStoreBuilding(cfg) {
   const imageKey = cfg.image || cfg.key;
   const building = this.add.image(cfg.x, cfg.y, imageKey)
     .setDisplaySize(cfg.w, cfg.h)
-    .setDepth(cfg.y);
+    .setDepth(cfg.y + 25);
 
+  const signOffsetY = (typeof cfg.signOffsetY === "number") ? cfg.signOffsetY : -84;
+  const signScale = (typeof cfg.signScale === "number") ? cfg.signScale : 0.28;
   if (this.textures.exists("store_signs")) {
-    this.add.image(cfg.x, cfg.y - 105, "store_signs", cfg.signFrame)
-      .setScale(0.28)
+    this.add.image(cfg.x, cfg.y + signOffsetY, "store_signs", cfg.signFrame)
+      .setScale(signScale)
       .setDepth(900);
   }
 
-  const blocker = this.add.rectangle(cfg.x, cfg.y - 20, cfg.w * 0.88, cfg.h * 0.58, 0xff0000, 0);
+  // Block the wall/roof, not the walkable front apron.
+  const blocker = this.add.rectangle(cfg.x, cfg.y - 24, cfg.w * 0.80, cfg.h * 0.48, 0xff0000, 0);
   this.physics.add.existing(blocker, true);
   this.solidObjects.add(blocker);
 
@@ -597,7 +192,6 @@ placeStoreBuilding(cfg) {
   this.storeDoorZones.push({ key: cfg.key, label: cfg.label, zone: door, spawn: cfg.spawn });
   return building;
 }
-
 enterStore(key) {
   const info = (this.storeDoorZones || []).find(d => d.key === key);
   this.scene.start("StoreInteriorScene", { store: key, spawn: info ? info.spawn : { x: 1200, y: 720 } });
@@ -923,13 +517,13 @@ class AutoShopInteriorScene extends BaseScene {
     this.load.on("loaderror", (file) => {
       console.warn("Asset failed:", file && file.src);
     });
-    this.load.spritesheet("donny", "assets/characters/donny_walk_4dir_128x128_phaser.png?v=030", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("donny_punch", "assets/characters/donny_punch_4dir_128x128_phaser.png?v=030", { frameWidth: 128, frameHeight: 128 });
-    this.load.image("pistol", "assets/weapons/pistol.png?v=042");
-    this.load.image("auto_shop_interior_bg", "assets/interiors/auto_shop_empty_interior.png?v=034");
-    this.load.spritesheet("auto_shop_large_props", "assets/props/auto_shop_large_props_256x128.png?v=041", { frameWidth: 256, frameHeight: 128 });
-    this.load.spritesheet("auto_shop_small_props", "assets/props/auto_shop_small_props_128x128.png?v=041", { frameWidth: 128, frameHeight: 128 });
-    this.load.audio("bg_music", "assets/audio/Grain Silo Ghosts.mp3?v=033");
+    this.load.spritesheet("donny", "assets/characters/donny_walk_4dir_128x128_phaser.png?v=055", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_punch", "assets/characters/donny_punch_4dir_128x128_phaser.png?v=055", { frameWidth: 128, frameHeight: 128 });
+    this.load.image("pistol", "assets/weapons/pistol.png?v=055");
+    this.load.image("auto_shop_interior_bg", "assets/interiors/auto_shop_empty_interior.png?v=055");
+    this.load.spritesheet("auto_shop_large_props", "assets/props/auto_shop_large_props_256x128.png?v=055", { frameWidth: 256, frameHeight: 128 });
+    this.load.spritesheet("auto_shop_small_props", "assets/props/auto_shop_small_props_128x128.png?v=055", { frameWidth: 128, frameHeight: 128 });
+    this.load.audio("bg_music", "assets/audio/Grain Silo Ghosts.mp3?v=055");
   }
   create() {
     this.setupMobile();
@@ -940,7 +534,7 @@ class AutoShopInteriorScene extends BaseScene {
     this.createPlayer(640, 560);
     this.createPlayerAnims();
     this.keys = this.input.keyboard.addKeys({ up:"W", down:"S", left:"A", right:"D", interact:"E", attack:"SPACE", shoot:"F", pause:"P", music:"M" });
-    this.createHUD("v0.5.2 - Jim + Storefront Fix");
+    this.createHUD("v0.5.5 - Checkerboard + Store Placement Fix");
     this.createControls();
     this.ensureMusic();
     this.input.once("pointerdown", () => this.ensureMusic(true));
@@ -1034,22 +628,22 @@ class StoreInteriorScene extends BaseScene {
     this.load.on("loaderror", (file) => {
       console.warn("Asset failed:", file && file.src);
     });
-    this.load.spritesheet("donny", "assets/characters/donny_walk_4dir_128x128_phaser.png?v=030", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("donny_punch", "assets/characters/donny_punch_4dir_128x128_phaser.png?v=030", { frameWidth: 128, frameHeight: 128 });
-    this.load.image("pistol", "assets/weapons/pistol.png?v=042");
-    this.load.image("diner_interior", "assets/interiors/diner_interior.png?v=050");
-    this.load.image("hardware_store_interior", "assets/interiors/hardware_store_interior.png?v=050");
-    this.load.image("pharmacy_interior", "assets/interiors/pharmacy_interior.png?v=050");
-    this.load.image("music_store_interior", "assets/interiors/music_store_interior.png?v=050");
-    this.load.spritesheet("diner_large_props", "assets/props/diner_large_props_256x128.png?v=050", { frameWidth: 256, frameHeight: 128 });
-    this.load.spritesheet("diner_small_props", "assets/props/diner_small_props_128x128.png?v=050", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("hardware_large_props", "assets/props/hardware_large_props_256x128.png?v=050", { frameWidth: 256, frameHeight: 128 });
-    this.load.spritesheet("hardware_small_props", "assets/props/hardware_small_props_128x128.png?v=050", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("pharmacy_large_props", "assets/props/pharmacy_large_props_256x128.png?v=050", { frameWidth: 256, frameHeight: 128 });
-    this.load.spritesheet("pharmacy_small_props", "assets/props/pharmacy_small_props_128x128.png?v=050", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("music_store_large_props", "assets/props/music_store_large_props_256x128.png?v=050", { frameWidth: 256, frameHeight: 128 });
-    this.load.spritesheet("music_store_small_props", "assets/props/music_store_small_props_128x128.png?v=050", { frameWidth: 128, frameHeight: 128 });
-    this.load.audio("bg_music", "assets/audio/Grain Silo Ghosts.mp3?v=033");
+    this.load.spritesheet("donny", "assets/characters/donny_walk_4dir_128x128_phaser.png?v=055", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_punch", "assets/characters/donny_punch_4dir_128x128_phaser.png?v=055", { frameWidth: 128, frameHeight: 128 });
+    this.load.image("pistol", "assets/weapons/pistol.png?v=055");
+    this.load.image("diner_interior", "assets/interiors/diner_interior.png?v=055");
+    this.load.image("hardware_store_interior", "assets/interiors/hardware_store_interior.png?v=055");
+    this.load.image("pharmacy_interior", "assets/interiors/pharmacy_interior.png?v=055");
+    this.load.image("music_store_interior", "assets/interiors/music_store_interior.png?v=055");
+    this.load.spritesheet("diner_large_props", "assets/props/diner_large_props_256x128.png?v=055", { frameWidth: 256, frameHeight: 128 });
+    this.load.spritesheet("diner_small_props", "assets/props/diner_small_props_128x128.png?v=055", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("hardware_large_props", "assets/props/hardware_large_props_256x128.png?v=055", { frameWidth: 256, frameHeight: 128 });
+    this.load.spritesheet("hardware_small_props", "assets/props/hardware_small_props_128x128.png?v=055", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("pharmacy_large_props", "assets/props/pharmacy_large_props_256x128.png?v=055", { frameWidth: 256, frameHeight: 128 });
+    this.load.spritesheet("pharmacy_small_props", "assets/props/pharmacy_small_props_128x128.png?v=055", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("music_store_large_props", "assets/props/music_store_large_props_256x128.png?v=055", { frameWidth: 256, frameHeight: 128 });
+    this.load.spritesheet("music_store_small_props", "assets/props/music_store_small_props_128x128.png?v=055", { frameWidth: 128, frameHeight: 128 });
+    this.load.audio("bg_music", "assets/audio/Grain Silo Ghosts.mp3?v=055");
   }
 
   create(data) {
@@ -1063,7 +657,7 @@ class StoreInteriorScene extends BaseScene {
     this.createPlayer(640, 610);
     this.createPlayerAnims();
     this.keys = this.input.keyboard.addKeys({ up:"W", down:"S", left:"A", right:"D", interact:"E", attack:"SPACE", shoot:"F", pause:"P", music:"M" });
-    this.createHUD("v0.5.2 - Jim + Storefront Fix");
+    this.createHUD("v0.5.5 - Checkerboard + Store Placement Fix");
     this.createControls();
     this.ensureMusic();
     this.input.once("pointerdown", () => this.ensureMusic(true));
