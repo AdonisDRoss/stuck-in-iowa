@@ -73,7 +73,7 @@ class BaseScene extends Phaser.Scene {
     make("walk_up", "donny", 24, 31, 8, -1);
     make("punch_down", "donny_punch", 0, 5, 14, 0);
     make("punch_right", "donny_punch", 6, 11, 14, 0);
-    make("punch_left", "donny_punch", 12, 17, 14, 0);
+    make("punch_left", "donny_punch", 6, 11, 14, 0);
     make("punch_up", "donny_punch", 18, 23, 14, 0);
   }
 
@@ -360,10 +360,18 @@ class BaseScene extends Phaser.Scene {
     this.time.delayedCall(350, () => { this.attackCooldown = false; });
     this.isAttacking = true;
     this.player.setTexture("donny_punch");
+
+    if (this.facing === "left") {
+      this.player.setFlipX(true);
+    } else {
+      this.player.setFlipX(false);
+    }
+
     this.player.anims.play("punch_" + this.facing, true);
     this.player.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
       this.isAttacking = false;
       this.player.setTexture("donny");
+      this.player.setFlipX(false);
     });
     const slash = this.add.circle(this.player.x, this.player.y, 80, 0xffffff, 0.18);
     this.time.delayedCall(120, () => slash.destroy());
@@ -409,7 +417,7 @@ class MainStreetScene extends BaseScene {
     this.createJim();
     this.createZombie();
     this.keys = this.input.keyboard.addKeys({ up:"W", down:"S", left:"A", right:"D", interact:"E", attack:"SPACE", pause:"P", music:"M" });
-    this.createHUD("v0.3.2 - Music Pause Menu");
+    this.createHUD("v0.3.4 - Interior Background + Left Punch Fix");
     this.createControls();
     this.ensureMusic();
     this.input.once("pointerdown", () => this.ensureMusic(true));
@@ -647,6 +655,8 @@ class AutoShopInteriorScene extends BaseScene {
     });
     this.load.spritesheet("donny", "assets/characters/donny_walk_4dir_128x128_phaser.png?v=030", { frameWidth: 128, frameHeight: 128 });
     this.load.spritesheet("donny_punch", "assets/characters/donny_punch_4dir_128x128_phaser.png?v=030", { frameWidth: 128, frameHeight: 128 });
+    this.load.image("auto_shop_interior_bg", "assets/interiors/auto_shop_empty_interior.png?v=034");
+    this.load.image("auto_shop_interior_props", "assets/props/auto_shop_interior_props.png?v=034");
     this.load.audio("bg_music", "assets/audio/Grain Silo Ghosts.mp3?v=033");
   }
   create() {
@@ -658,26 +668,40 @@ class AutoShopInteriorScene extends BaseScene {
     this.createPlayer(640, 560);
     this.createPlayerAnims();
     this.keys = this.input.keyboard.addKeys({ up:"W", down:"S", left:"A", right:"D", interact:"E", attack:"SPACE", pause:"P", music:"M" });
-    this.createHUD("v0.3.2 - Auto Shop Interior");
+    this.createHUD("v0.3.4 - Empty Auto Shop Interior");
     this.createControls();
     this.ensureMusic();
     this.input.once("pointerdown", () => this.ensureMusic(true));
   }
   makeInterior() {
-    this.add.rectangle(640, 360, 1280, 720, 0x2a2a2a);
-    this.add.rectangle(640, 60, 1120, 80, 0x1a1a1a);
-    this.add.rectangle(640, 660, 1120, 80, 0x1a1a1a);
-    this.add.text(640, 40, "AUTO SHOP INTERIOR", { fontSize:"28px", color:"#ffffff", fontFamily:"Arial" }).setOrigin(0.5);
-    this.makeSolidInterior(220, 210, 240, 70, 0x555555, "WORKBENCH");
-    this.makeSolidInterior(540, 205, 280, 70, 0x3f3f3f, "TOOL SHELVES");
-    this.makeSolidInterior(930, 205, 260, 70, 0x4a3925, "PARTS SHELVES");
-    this.toolbox = this.add.rectangle(360, 420, 90, 55, 0x70431d, 1);
-    this.add.text(360, 420, "TOOLBOX", { fontSize:"13px", color:"#ffffff", fontFamily:"Arial" }).setOrigin(0.5);
-    this.storageDoor = this.add.rectangle(1040, 455, 150, 90, 0x111111, 1);
-    this.add.text(1040, 455, "STORAGE", { fontSize:"14px", color:"#ffffff", fontFamily:"Arial" }).setOrigin(0.5);
-    this.exitDoor = this.add.rectangle(640, 660, 120, 48, 0x000000, 1);
-    this.add.text(640, 660, "EXIT", { fontSize:"16px", color:"#ffffff", fontFamily:"Arial" }).setOrigin(0.5);
+    // Game-ready empty interior background.
+    // File path: assets/interiors/auto_shop_empty_interior.png
+    this.add.image(640, 360, "auto_shop_interior_bg").setDisplaySize(1280, 720).setDepth(0);
+
+    // Invisible collision boundaries placed along the bottom edge of the walls.
+    // This keeps Donny's feet from walking through the wall art.
+    this.makeInvisibleWall(640, 150, 900, 44);      // top wall base
+    this.makeInvisibleWall(190, 400, 46, 430);      // left wall base
+    this.makeInvisibleWall(1140, 410, 46, 430);     // right wall base
+    this.makeInvisibleWall(390, 668, 450, 54);      // bottom wall left of exit
+    this.makeInvisibleWall(900, 668, 450, 54);      // bottom wall right of exit
+    this.makeInvisibleWall(1075, 210, 170, 48);     // office/side-room wall base
+
+    // Invisible interaction zones. Props will be placed visually later.
+    this.toolbox = this.add.zone(640, 500, 120, 90);
+    this.physics.add.existing(this.toolbox, true);
+
+    this.exitDoor = this.add.zone(640, 665, 150, 70);
+    this.physics.add.existing(this.exitDoor, true);
   }
+
+  makeInvisibleWall(x, y, w, h) {
+    const wall = this.add.rectangle(x, y, w, h, 0xff0000, 0);
+    this.physics.add.existing(wall, true);
+    this.solidObjects.add(wall);
+    return wall;
+  }
+
   makeSolidInterior(x, y, w, h, color, label) {
     const obj = this.add.rectangle(x, y, w, h, color, 1);
     this.physics.add.existing(obj, true); this.solidObjects.add(obj);
