@@ -152,6 +152,7 @@ class BaseScene extends Phaser.Scene {
     if (this.locationName) return this.locationName;
 
     if (this.scene && this.scene.key === "MainStreetScene") return "MAIN ST 100 BLOCK";
+    if (this.scene && this.scene.key === "MainStreet200Scene") return "MAIN ST 200 BLOCK";
     if (this.scene && this.scene.key === "AutoShopInteriorScene") return "AUTO SHOP";
 
     return "UNKNOWN BLOCK";
@@ -961,50 +962,50 @@ class MainStreetScene extends BaseScene {
     this.load.on("loaderror", (file) => {
       console.warn("Asset failed:", file && file.src);
     });
-    this.load.spritesheet("donny_walk", "assets/characters/donny_walk_4dir_128x128_phaser.png?v=065", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("donny_punch", "assets/characters/donny_punch_4dir_128x128_phaser.png?v=065", { frameWidth: 128, frameHeight: 128 });
-    // Donny expanded controller sheets v0.6.4
-    this.load.spritesheet("donny_idle", "assets/characters/donny_idle_4dir_128x128_phaser.png?v=065", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("donny_run", "assets/characters/donny_run_4dir_128x128_phaser.png?v=065", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("donny_melee_light", "assets/characters/donny_melee_light_4dir_128x128_phaser.png?v=065", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("donny_shoot_pistol", "assets/characters/donny_shoot_pistol_4dir_128x128_phaser.png?v=065", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("donny_action", "assets/characters/donny_action_4dir_128x128_phaser.png?v=065", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("donny_pickup", "assets/characters/donny_pickup_4dir_128x128_phaser.png?v=065", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("donny_use", "assets/characters/donny_use_4dir_128x128_phaser.png?v=065", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("donny_reaction", "assets/characters/donny_reaction_4dir_128x128_phaser.png?v=065", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("donny_ko", "assets/characters/donny_ko_4dir_128x128_phaser.png?v=065", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("donny_slide", "assets/characters/donny_slide_4dir_128x128_phaser.png?v=065", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("donny_block", "assets/characters/donny_block_4dir_128x128_phaser.png?v=065", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("donny_dodge", "assets/characters/donny_dodge_4dir_128x128_phaser.png?v=065", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("donny_climb", "assets/characters/donny_climb_4dir_128x128_phaser.png?v=065", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("donny_jump", "assets/characters/donny_jump_4dir_128x128_phaser.png?v=065", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("donny_crawl", "assets/characters/donny_crawl_4dir_128x128_phaser.png?v=065", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("donny_carry", "assets/characters/donny_carry_4dir_128x128_phaser.png?v=065", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("donny_talk", "assets/characters/donny_talk_4dir_128x128_phaser.png?v=065", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("donny_sit", "assets/characters/donny_sit_4dir_128x128_phaser.png?v=065", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("donny_sleep", "assets/characters/donny_sleep_4dir_128x128_phaser.png?v=065", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("donny_drive", "assets/characters/donny_drive_4dir_128x128_phaser.png?v=065", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("donny_throw_item", "assets/characters/donny_throw_item_4dir_128x128_phaser.png?v=065", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("donny_melee_heavy", "assets/characters/donny_melee_heavy_4dir_128x128_phaser.png?v=065", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("donny_shoot_rifle", "assets/characters/donny_shoot_rifle_4dir_128x128_phaser.png?v=065", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("jim_walk", "assets/characters/jim_walk_4dir_128x128_phaser.png?v=065", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("jim_punch", "assets/characters/jim_punch_4dir_128x128_phaser.png?v=065", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("jim_hurt_ko", "assets/characters/jim_hurt_ko_4dir_128x128_phaser.png?v=065", { frameWidth: 128, frameHeight: 128 });
-    this.load.image("pistol", "assets/weapons/pistol.png?v=065");
-    this.load.image("auto_shop", "assets/buildings/auto_shop.png?v=065");
-    this.load.image("diner", "assets/buildings/diner.png?v=065");
-    this.load.image("hardware_store", "assets/buildings/hardware_store.png?v=065");
-    this.load.image("pharmacy", "assets/buildings/pharmacy.png?v=065");
-    this.load.image("music_store", "assets/buildings/music_store.png?v=065");
-    this.load.spritesheet("store_signs", "assets/signs/store_signs_256x128.png?v=065", { frameWidth: 256, frameHeight: 128 });
-    this.load.image("road_tiles", "assets/tiles/road_tiles_32x32.png?v=065");
-    this.load.image("mainstreet_bg", "assets/maps/mainstreet_bg.png?v=065");
-    this.load.spritesheet("mainstreet_large_props", "assets/props/mainstreet_large_props_256x128.png?v=065", { frameWidth: 256, frameHeight: 128 });
-    this.load.spritesheet("mainstreet_small_props", "assets/props/mainstreet_small_props_128x128.png?v=065", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("zombie_worker_walk", "assets/zombies/zombie_worker_walk.png?v=065", { frameWidth: 182, frameHeight: 180 });
-    this.load.spritesheet("zombie_worker_attack", "assets/zombies/zombie_worker_attack.png?v=065", { frameWidth: 182, frameHeight: 180 });
-    this.load.spritesheet("zombie_worker_hurt_ko", "assets/zombies/zombie_worker_hurt_ko.png?v=065", { frameWidth: 182, frameHeight: 180 });
-    this.load.audio("bg_music", "assets/audio/Grain Silo Ghosts.mp3?v=065");
+    this.load.spritesheet("donny_walk", "assets/characters/donny_walk_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_punch", "assets/characters/donny_punch_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    // Donny expanded controller sheets v0.6.6
+    this.load.spritesheet("donny_idle", "assets/characters/donny_idle_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_run", "assets/characters/donny_run_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_melee_light", "assets/characters/donny_melee_light_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_shoot_pistol", "assets/characters/donny_shoot_pistol_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_action", "assets/characters/donny_action_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_pickup", "assets/characters/donny_pickup_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_use", "assets/characters/donny_use_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_reaction", "assets/characters/donny_reaction_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_ko", "assets/characters/donny_ko_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_slide", "assets/characters/donny_slide_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_block", "assets/characters/donny_block_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_dodge", "assets/characters/donny_dodge_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_climb", "assets/characters/donny_climb_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_jump", "assets/characters/donny_jump_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_crawl", "assets/characters/donny_crawl_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_carry", "assets/characters/donny_carry_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_talk", "assets/characters/donny_talk_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_sit", "assets/characters/donny_sit_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_sleep", "assets/characters/donny_sleep_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_drive", "assets/characters/donny_drive_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_throw_item", "assets/characters/donny_throw_item_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_melee_heavy", "assets/characters/donny_melee_heavy_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_shoot_rifle", "assets/characters/donny_shoot_rifle_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("jim_walk", "assets/characters/jim_walk_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("jim_punch", "assets/characters/jim_punch_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("jim_hurt_ko", "assets/characters/jim_hurt_ko_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.image("pistol", "assets/weapons/pistol.png?v=066");
+    this.load.image("auto_shop", "assets/buildings/auto_shop.png?v=066");
+    this.load.image("diner", "assets/buildings/diner.png?v=066");
+    this.load.image("hardware_store", "assets/buildings/hardware_store.png?v=066");
+    this.load.image("pharmacy", "assets/buildings/pharmacy.png?v=066");
+    this.load.image("music_store", "assets/buildings/music_store.png?v=066");
+    this.load.spritesheet("store_signs", "assets/signs/store_signs_256x128.png?v=066", { frameWidth: 256, frameHeight: 128 });
+    this.load.image("road_tiles", "assets/tiles/road_tiles_32x32.png?v=066");
+    this.load.image("mainstreet_bg", "assets/maps/mainstreet_bg.png?v=066");
+    this.load.spritesheet("mainstreet_large_props", "assets/props/mainstreet_large_props_256x128.png?v=066", { frameWidth: 256, frameHeight: 128 });
+    this.load.spritesheet("mainstreet_small_props", "assets/props/mainstreet_small_props_128x128.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("zombie_worker_walk", "assets/zombies/zombie_worker_walk.png?v=066", { frameWidth: 182, frameHeight: 180 });
+    this.load.spritesheet("zombie_worker_attack", "assets/zombies/zombie_worker_attack.png?v=066", { frameWidth: 182, frameHeight: 180 });
+    this.load.spritesheet("zombie_worker_hurt_ko", "assets/zombies/zombie_worker_hurt_ko.png?v=066", { frameWidth: 182, frameHeight: 180 });
+    this.load.audio("bg_music", "assets/audio/Grain Silo Ghosts.mp3?v=066");
   }
 
   create(data) {
@@ -1023,7 +1024,7 @@ class MainStreetScene extends BaseScene {
     this.createZombie();
     this.keys = this.input.keyboard.addKeys({ up:"W", down:"S", left:"A", right:"D", interact:"E", attack:"SPACE", run:"SHIFT", moveAction:"B", shoot:"F", pause:"P", music:"M" });
     this.locationName = "MAIN ST 100 BLOCK";
-    this.createHUD("v0.6.5 - Location Street Signs");
+    this.createHUD("v0.6.6 - Main Street 200 Block");
     this.createControls();
     this.ensureMusic();
     this.input.once("pointerdown", () => this.ensureMusic(true));
@@ -1493,6 +1494,12 @@ tryInteract() {
 
     this.handlePlayerMovement([this.autoShopBlocker, this.solidObjects]);
 
+    // East edge transition to Main Street 200 Block.
+    if (this.player.x > this.worldW - 70) {
+      this.scene.start("MainStreet200Scene", { spawn: { x: 90, y: Phaser.Math.Clamp(this.player.y, 360, 1180) } });
+      return;
+    }
+
     // Door transitions: only fire when Donny overlaps the small door zone.
     if (this.physics.overlap(this.player, this.autoShopDoorZone)) {
       this.scene.start("AutoShopInteriorScene");
@@ -1523,43 +1530,225 @@ tryInteract() {
 
 }
 
+
+class MainStreet200Scene extends BaseScene {
+  constructor() { super("MainStreet200Scene"); }
+
+  preload() {
+    this.load.on("loaderror", (file) => {
+      console.warn("Asset failed:", file && file.src);
+    });
+
+    // Donny/player sheets.
+    this.load.spritesheet("donny_walk", "assets/characters/donny_walk_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_punch", "assets/characters/donny_punch_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_idle", "assets/characters/donny_idle_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_run", "assets/characters/donny_run_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_melee_light", "assets/characters/donny_melee_light_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_shoot_pistol", "assets/characters/donny_shoot_pistol_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_action", "assets/characters/donny_action_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_pickup", "assets/characters/donny_pickup_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_use", "assets/characters/donny_use_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_reaction", "assets/characters/donny_reaction_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_ko", "assets/characters/donny_ko_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_slide", "assets/characters/donny_slide_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_block", "assets/characters/donny_block_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_dodge", "assets/characters/donny_dodge_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_climb", "assets/characters/donny_climb_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_jump", "assets/characters/donny_jump_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_crawl", "assets/characters/donny_crawl_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_carry", "assets/characters/donny_carry_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_talk", "assets/characters/donny_talk_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_sit", "assets/characters/donny_sit_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_sleep", "assets/characters/donny_sleep_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_drive", "assets/characters/donny_drive_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_throw_item", "assets/characters/donny_throw_item_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_melee_heavy", "assets/characters/donny_melee_heavy_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_shoot_rifle", "assets/characters/donny_shoot_rifle_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.image("pistol", "assets/weapons/pistol.png?v=066");
+
+    // Main Street 200 Block assets.
+    this.load.image("mainstreet_200_bg", "assets/maps/mainstreet_200_bg.png?v=066");
+    this.load.spritesheet("mainstreet_200_buildings", "assets/buildings/mainstreet_200_buildings_512x256.png?v=066", { frameWidth: 512, frameHeight: 256 });
+    this.load.spritesheet("mainstreet_200_signs", "assets/signs/mainstreet_200_signs_256x128.png?v=066", { frameWidth: 256, frameHeight: 128 });
+    this.load.audio("bg_music", "assets/audio/Grain Silo Ghosts.mp3?v=066");
+  }
+
+  create(data) {
+    this.setupMobile();
+    this.worldW = 2400;
+    this.worldH = 1400;
+    this.physics.world.setBounds(0, 0, this.worldW, this.worldH);
+    this.cameras.main.setBounds(0, 0, this.worldW, this.worldH);
+    this.solidObjects = this.physics.add.staticGroup();
+    this.makeMap200();
+
+    const spawn = (data && data.spawn) ? data.spawn : { x: 90, y: 720 };
+    this.createPlayer(spawn.x, spawn.y);
+    this.createPlayerAnims();
+    this.keys = this.input.keyboard.addKeys({ up:"W", down:"S", left:"A", right:"D", interact:"E", attack:"SPACE", run:"SHIFT", moveAction:"B", shoot:"F", pause:"P", music:"M" });
+    this.locationName = "MAIN ST 200 BLOCK";
+    this.createHUD("v0.6.6 - Main Street 200 Block");
+    this.createControls();
+    this.ensureMusic();
+    this.input.once("pointerdown", () => this.ensureMusic(true));
+  }
+
+  makeMap200() {
+    this.add.image(this.worldW / 2, this.worldH / 2, "mainstreet_200_bg")
+      .setDisplaySize(this.worldW, this.worldH)
+      .setDepth(-100);
+
+    this.storeDoorZones = [];
+
+    const y = 350;
+    const w = 430;
+    const h = 238;
+    const signY = 245;
+    const doorY = 462;
+    const spots = [
+      { key:"grocery", label:"Grocery", frame:0, sign:0, x:230, doorOffsetX:12, spawn:{x:230, y:520} },
+      { key:"laundromat", label:"Laundromat", frame:1, sign:1, x:620, doorOffsetX:0, spawn:{x:620, y:520} },
+      { key:"pawn", label:"Pawn Shop", frame:2, sign:2, x:1010, doorOffsetX:0, spawn:{x:1010, y:520} },
+      { key:"police", label:"Police", frame:3, sign:3, x:1400, doorOffsetX:0, spawn:{x:1400, y:520} },
+      { key:"motel", label:"Apartments", frame:4, sign:4, x:1790, doorOffsetX:0, spawn:{x:1790, y:520} },
+      { key:"alley", label:"Backlot", frame:5, sign:5, x:2180, doorOffsetX:0, spawn:{x:2180, y:520} }
+    ];
+
+    spots.forEach(cfg => this.place200Building(cfg, y, w, h, signY, doorY));
+
+    // Edge/road markers without blocking navigation.
+    this.add.rectangle(35, 720, 30, 760, 0x000000, 0.12).setDepth(20);
+    this.add.rectangle(2365, 720, 30, 760, 0x000000, 0.12).setDepth(20);
+  }
+
+  place200Building(cfg, y, w, h, signY, doorY) {
+    const building = this.add.image(cfg.x, y, "mainstreet_200_buildings", cfg.frame)
+      .setDisplaySize(w, h)
+      .setDepth(y + 25);
+
+    this.add.image(cfg.x, signY, "mainstreet_200_signs", cfg.sign)
+      .setDisplaySize(150, 75)
+      .setDepth(950);
+
+    // Block the roof/wall section only. Door apron stays walkable.
+    const blocker = this.add.rectangle(cfg.x, y - 18, w * 0.72, h * 0.45, 0xff0000, 0);
+    this.physics.add.existing(blocker, true);
+    this.solidObjects.add(blocker);
+
+    const door = this.add.zone(cfg.x + (cfg.doorOffsetX || 0), doorY, 58, 82);
+    this.physics.add.existing(door, true);
+
+    this.storeDoorZones.push({
+      key: cfg.key,
+      label: cfg.label,
+      zone: door,
+      spawn: cfg.spawn
+    });
+
+    return building;
+  }
+
+  enter200Store(key) {
+    const info = (this.storeDoorZones || []).find(d => d.key === key);
+    this.scene.start("StoreInteriorScene", {
+      store: key,
+      returnScene: "MainStreet200Scene",
+      spawn: info ? info.spawn : { x: 90, y: 720 }
+    });
+  }
+
+  tryInteract() {
+    if (this.dialogueBox && this.dialogueBox.active) this.dialogueBox.destroy();
+
+    for (const door of (this.storeDoorZones || [])) {
+      if (this.physics.overlap(this.player, door.zone)) {
+        this.enter200Store(door.key);
+        return;
+      }
+    }
+
+    this.makeDialogue("Main St 200", "Find a door and press A / E to search this block.");
+  }
+
+  update() {
+    this.handleVirtualStick();
+    if (Phaser.Input.Keyboard.JustDown(this.keys.pause)) this.togglePauseMenu();
+    if (Phaser.Input.Keyboard.JustDown(this.keys.music)) this.toggleMusic();
+
+    if (GameState.pausedMenuOpen) {
+      this.player.setVelocity(0);
+      this.updateHUD();
+      return;
+    }
+
+    if (Phaser.Input.Keyboard.JustDown(this.keys.interact)) this.tryInteract();
+    if (Phaser.Input.Keyboard.JustDown(this.keys.attack)) this.attack();
+    if (Phaser.Input.Keyboard.JustDown(this.keys.moveAction)) this.pressMovementAction();
+    if (Phaser.Input.Keyboard.JustDown(this.keys.shoot)) this.shootPistol();
+
+    this.handlePlayerMovement([this.solidObjects]);
+
+    // West edge returns to Main Street 100 Block.
+    if (this.player.x < 70) {
+      this.scene.start("MainStreetScene", { spawn: { x: 2320, y: Phaser.Math.Clamp(this.player.y, 360, 1180) } });
+      return;
+    }
+
+    // Door zones auto-enter when touched, matching Main Street 100 behavior.
+    for (const door of (this.storeDoorZones || [])) {
+      if (this.physics.overlap(this.player, door.zone)) {
+        this.enter200Store(door.key);
+        return;
+      }
+    }
+
+    GameState.minutes += 0.03;
+    if (GameState.minutes >= 1440) {
+      GameState.minutes = 0;
+      GameState.day += 1;
+    }
+    this.updateHUD();
+  }
+}
+
 class AutoShopInteriorScene extends BaseScene {
   constructor() { super("AutoShopInteriorScene"); }
   preload() {
     this.load.on("loaderror", (file) => {
       console.warn("Asset failed:", file && file.src);
     });
-    this.load.spritesheet("donny_walk", "assets/characters/donny_walk_4dir_128x128_phaser.png?v=065", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("donny_punch", "assets/characters/donny_punch_4dir_128x128_phaser.png?v=065", { frameWidth: 128, frameHeight: 128 });
-    // Donny expanded controller sheets v0.6.4
-    this.load.spritesheet("donny_idle", "assets/characters/donny_idle_4dir_128x128_phaser.png?v=065", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("donny_run", "assets/characters/donny_run_4dir_128x128_phaser.png?v=065", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("donny_melee_light", "assets/characters/donny_melee_light_4dir_128x128_phaser.png?v=065", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("donny_shoot_pistol", "assets/characters/donny_shoot_pistol_4dir_128x128_phaser.png?v=065", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("donny_action", "assets/characters/donny_action_4dir_128x128_phaser.png?v=065", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("donny_pickup", "assets/characters/donny_pickup_4dir_128x128_phaser.png?v=065", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("donny_use", "assets/characters/donny_use_4dir_128x128_phaser.png?v=065", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("donny_reaction", "assets/characters/donny_reaction_4dir_128x128_phaser.png?v=065", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("donny_ko", "assets/characters/donny_ko_4dir_128x128_phaser.png?v=065", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("donny_slide", "assets/characters/donny_slide_4dir_128x128_phaser.png?v=065", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("donny_block", "assets/characters/donny_block_4dir_128x128_phaser.png?v=065", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("donny_dodge", "assets/characters/donny_dodge_4dir_128x128_phaser.png?v=065", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("donny_climb", "assets/characters/donny_climb_4dir_128x128_phaser.png?v=065", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("donny_jump", "assets/characters/donny_jump_4dir_128x128_phaser.png?v=065", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("donny_crawl", "assets/characters/donny_crawl_4dir_128x128_phaser.png?v=065", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("donny_carry", "assets/characters/donny_carry_4dir_128x128_phaser.png?v=065", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("donny_talk", "assets/characters/donny_talk_4dir_128x128_phaser.png?v=065", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("donny_sit", "assets/characters/donny_sit_4dir_128x128_phaser.png?v=065", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("donny_sleep", "assets/characters/donny_sleep_4dir_128x128_phaser.png?v=065", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("donny_drive", "assets/characters/donny_drive_4dir_128x128_phaser.png?v=065", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("donny_throw_item", "assets/characters/donny_throw_item_4dir_128x128_phaser.png?v=065", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("donny_melee_heavy", "assets/characters/donny_melee_heavy_4dir_128x128_phaser.png?v=065", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("donny_shoot_rifle", "assets/characters/donny_shoot_rifle_4dir_128x128_phaser.png?v=065", { frameWidth: 128, frameHeight: 128 });
-    this.load.image("pistol", "assets/weapons/pistol.png?v=065");
-    this.load.image("auto_shop_interior_bg", "assets/interiors/auto_shop_empty_interior.png?v=065");
-    this.load.spritesheet("auto_shop_large_props", "assets/props/auto_shop_large_props_256x128.png?v=065", { frameWidth: 256, frameHeight: 128 });
-    this.load.spritesheet("auto_shop_small_props", "assets/props/auto_shop_small_props_128x128.png?v=065", { frameWidth: 128, frameHeight: 128 });
-    this.load.audio("bg_music", "assets/audio/Grain Silo Ghosts.mp3?v=065");
+    this.load.spritesheet("donny_walk", "assets/characters/donny_walk_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_punch", "assets/characters/donny_punch_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    // Donny expanded controller sheets v0.6.6
+    this.load.spritesheet("donny_idle", "assets/characters/donny_idle_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_run", "assets/characters/donny_run_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_melee_light", "assets/characters/donny_melee_light_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_shoot_pistol", "assets/characters/donny_shoot_pistol_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_action", "assets/characters/donny_action_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_pickup", "assets/characters/donny_pickup_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_use", "assets/characters/donny_use_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_reaction", "assets/characters/donny_reaction_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_ko", "assets/characters/donny_ko_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_slide", "assets/characters/donny_slide_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_block", "assets/characters/donny_block_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_dodge", "assets/characters/donny_dodge_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_climb", "assets/characters/donny_climb_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_jump", "assets/characters/donny_jump_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_crawl", "assets/characters/donny_crawl_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_carry", "assets/characters/donny_carry_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_talk", "assets/characters/donny_talk_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_sit", "assets/characters/donny_sit_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_sleep", "assets/characters/donny_sleep_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_drive", "assets/characters/donny_drive_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_throw_item", "assets/characters/donny_throw_item_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_melee_heavy", "assets/characters/donny_melee_heavy_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_shoot_rifle", "assets/characters/donny_shoot_rifle_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.image("pistol", "assets/weapons/pistol.png?v=066");
+    this.load.image("auto_shop_interior_bg", "assets/interiors/auto_shop_empty_interior.png?v=066");
+    this.load.spritesheet("auto_shop_large_props", "assets/props/auto_shop_large_props_256x128.png?v=066", { frameWidth: 256, frameHeight: 128 });
+    this.load.spritesheet("auto_shop_small_props", "assets/props/auto_shop_small_props_128x128.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.audio("bg_music", "assets/audio/Grain Silo Ghosts.mp3?v=066");
   }
   create() {
     this.setupMobile();
@@ -1571,7 +1760,7 @@ class AutoShopInteriorScene extends BaseScene {
     this.createPlayerAnims();
     this.keys = this.input.keyboard.addKeys({ up:"W", down:"S", left:"A", right:"D", interact:"E", attack:"SPACE", run:"SHIFT", moveAction:"B", shoot:"F", pause:"P", music:"M" });
     this.locationName = "AUTO SHOP";
-    this.createHUD("v0.6.5 - Location Street Signs");
+    this.createHUD("v0.6.6 - Main Street 200 Block");
     this.createControls();
     this.ensureMusic();
     this.input.once("pointerdown", () => this.ensureMusic(true));
@@ -1667,51 +1856,52 @@ class StoreInteriorScene extends BaseScene {
     this.load.on("loaderror", (file) => {
       console.warn("Asset failed:", file && file.src);
     });
-    this.load.spritesheet("donny_walk", "assets/characters/donny_walk_4dir_128x128_phaser.png?v=065", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("donny_punch", "assets/characters/donny_punch_4dir_128x128_phaser.png?v=065", { frameWidth: 128, frameHeight: 128 });
-    // Donny expanded controller sheets v0.6.4
-    this.load.spritesheet("donny_idle", "assets/characters/donny_idle_4dir_128x128_phaser.png?v=065", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("donny_run", "assets/characters/donny_run_4dir_128x128_phaser.png?v=065", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("donny_melee_light", "assets/characters/donny_melee_light_4dir_128x128_phaser.png?v=065", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("donny_shoot_pistol", "assets/characters/donny_shoot_pistol_4dir_128x128_phaser.png?v=065", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("donny_action", "assets/characters/donny_action_4dir_128x128_phaser.png?v=065", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("donny_pickup", "assets/characters/donny_pickup_4dir_128x128_phaser.png?v=065", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("donny_use", "assets/characters/donny_use_4dir_128x128_phaser.png?v=065", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("donny_reaction", "assets/characters/donny_reaction_4dir_128x128_phaser.png?v=065", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("donny_ko", "assets/characters/donny_ko_4dir_128x128_phaser.png?v=065", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("donny_slide", "assets/characters/donny_slide_4dir_128x128_phaser.png?v=065", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("donny_block", "assets/characters/donny_block_4dir_128x128_phaser.png?v=065", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("donny_dodge", "assets/characters/donny_dodge_4dir_128x128_phaser.png?v=065", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("donny_climb", "assets/characters/donny_climb_4dir_128x128_phaser.png?v=065", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("donny_jump", "assets/characters/donny_jump_4dir_128x128_phaser.png?v=065", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("donny_crawl", "assets/characters/donny_crawl_4dir_128x128_phaser.png?v=065", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("donny_carry", "assets/characters/donny_carry_4dir_128x128_phaser.png?v=065", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("donny_talk", "assets/characters/donny_talk_4dir_128x128_phaser.png?v=065", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("donny_sit", "assets/characters/donny_sit_4dir_128x128_phaser.png?v=065", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("donny_sleep", "assets/characters/donny_sleep_4dir_128x128_phaser.png?v=065", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("donny_drive", "assets/characters/donny_drive_4dir_128x128_phaser.png?v=065", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("donny_throw_item", "assets/characters/donny_throw_item_4dir_128x128_phaser.png?v=065", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("donny_melee_heavy", "assets/characters/donny_melee_heavy_4dir_128x128_phaser.png?v=065", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("donny_shoot_rifle", "assets/characters/donny_shoot_rifle_4dir_128x128_phaser.png?v=065", { frameWidth: 128, frameHeight: 128 });
-    this.load.image("pistol", "assets/weapons/pistol.png?v=065");
-    this.load.image("diner_interior", "assets/interiors/diner_interior.png?v=065");
-    this.load.image("hardware_store_interior", "assets/interiors/hardware_store_interior.png?v=065");
-    this.load.image("pharmacy_interior", "assets/interiors/pharmacy_interior.png?v=065");
-    this.load.image("music_store_interior", "assets/interiors/music_store_interior.png?v=065");
-    this.load.spritesheet("diner_large_props", "assets/props/diner_large_props_256x128.png?v=065", { frameWidth: 256, frameHeight: 128 });
-    this.load.spritesheet("diner_small_props", "assets/props/diner_small_props_128x128.png?v=065", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("hardware_large_props", "assets/props/hardware_large_props_256x128.png?v=065", { frameWidth: 256, frameHeight: 128 });
-    this.load.spritesheet("hardware_small_props", "assets/props/hardware_small_props_128x128.png?v=065", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("pharmacy_large_props", "assets/props/pharmacy_large_props_256x128.png?v=065", { frameWidth: 256, frameHeight: 128 });
-    this.load.spritesheet("pharmacy_small_props", "assets/props/pharmacy_small_props_128x128.png?v=065", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("music_store_large_props", "assets/props/music_store_large_props_256x128.png?v=065", { frameWidth: 256, frameHeight: 128 });
-    this.load.spritesheet("music_store_small_props", "assets/props/music_store_small_props_128x128.png?v=065", { frameWidth: 128, frameHeight: 128 });
-    this.load.audio("bg_music", "assets/audio/Grain Silo Ghosts.mp3?v=065");
+    this.load.spritesheet("donny_walk", "assets/characters/donny_walk_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_punch", "assets/characters/donny_punch_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    // Donny expanded controller sheets v0.6.6
+    this.load.spritesheet("donny_idle", "assets/characters/donny_idle_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_run", "assets/characters/donny_run_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_melee_light", "assets/characters/donny_melee_light_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_shoot_pistol", "assets/characters/donny_shoot_pistol_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_action", "assets/characters/donny_action_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_pickup", "assets/characters/donny_pickup_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_use", "assets/characters/donny_use_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_reaction", "assets/characters/donny_reaction_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_ko", "assets/characters/donny_ko_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_slide", "assets/characters/donny_slide_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_block", "assets/characters/donny_block_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_dodge", "assets/characters/donny_dodge_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_climb", "assets/characters/donny_climb_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_jump", "assets/characters/donny_jump_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_crawl", "assets/characters/donny_crawl_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_carry", "assets/characters/donny_carry_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_talk", "assets/characters/donny_talk_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_sit", "assets/characters/donny_sit_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_sleep", "assets/characters/donny_sleep_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_drive", "assets/characters/donny_drive_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_throw_item", "assets/characters/donny_throw_item_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_melee_heavy", "assets/characters/donny_melee_heavy_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_shoot_rifle", "assets/characters/donny_shoot_rifle_4dir_128x128_phaser.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.image("pistol", "assets/weapons/pistol.png?v=066");
+    this.load.image("diner_interior", "assets/interiors/diner_interior.png?v=066");
+    this.load.image("hardware_store_interior", "assets/interiors/hardware_store_interior.png?v=066");
+    this.load.image("pharmacy_interior", "assets/interiors/pharmacy_interior.png?v=066");
+    this.load.image("music_store_interior", "assets/interiors/music_store_interior.png?v=066");
+    this.load.spritesheet("diner_large_props", "assets/props/diner_large_props_256x128.png?v=066", { frameWidth: 256, frameHeight: 128 });
+    this.load.spritesheet("diner_small_props", "assets/props/diner_small_props_128x128.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("hardware_large_props", "assets/props/hardware_large_props_256x128.png?v=066", { frameWidth: 256, frameHeight: 128 });
+    this.load.spritesheet("hardware_small_props", "assets/props/hardware_small_props_128x128.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("pharmacy_large_props", "assets/props/pharmacy_large_props_256x128.png?v=066", { frameWidth: 256, frameHeight: 128 });
+    this.load.spritesheet("pharmacy_small_props", "assets/props/pharmacy_small_props_128x128.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("music_store_large_props", "assets/props/music_store_large_props_256x128.png?v=066", { frameWidth: 256, frameHeight: 128 });
+    this.load.spritesheet("music_store_small_props", "assets/props/music_store_small_props_128x128.png?v=066", { frameWidth: 128, frameHeight: 128 });
+    this.load.audio("bg_music", "assets/audio/Grain Silo Ghosts.mp3?v=066");
   }
 
   create(data) {
     this.storeKey = (data && data.store) ? data.store : "diner";
     this.returnSpawn = (data && data.spawn) ? data.spawn : { x: 1200, y: 720 };
+    this.returnScene = (data && data.returnScene) ? data.returnScene : "MainStreetScene";
     this.setupMobile();
     this.physics.world.setBounds(0, 0, 1280, 720);
     this.cameras.main.setBounds(0, 0, 1280, 720);
@@ -1722,7 +1912,7 @@ class StoreInteriorScene extends BaseScene {
     this.exitGraceUntil = this.time.now + 650;
     this.keys = this.input.keyboard.addKeys({ up:"W", down:"S", left:"A", right:"D", interact:"E", attack:"SPACE", run:"SHIFT", moveAction:"B", shoot:"F", pause:"P", music:"M" });
     this.locationName = this.getStoreConfig().title.toUpperCase();
-    this.createHUD("v0.6.5 - Location Street Signs");
+    this.createHUD("v0.6.6 - Main Street 200 Block");
     this.createControls();
     this.ensureMusic();
     this.input.once("pointerdown", () => this.ensureMusic(true));
@@ -1733,7 +1923,13 @@ class StoreInteriorScene extends BaseScene {
       diner: { title: "Diner", bg: "diner_interior", large: "diner_large_props", small: "diner_small_props", lootName: "Food", lootText: "Found canned food and coffee. Food +2.", resource: "food", amount: 2 },
       hardware: { title: "Hardware", bg: "hardware_store_interior", large: "hardware_large_props", small: "hardware_small_props", lootName: "Tools", lootText: "Found nails and repair supplies. Wood +3.", resource: "wood", amount: 3 },
       pharmacy: { title: "Pharmacy", bg: "pharmacy_interior", large: "pharmacy_large_props", small: "pharmacy_small_props", lootName: "Medicine", lootText: "Found usable medicine. Medicine +2.", resource: "medicine", amount: 2 },
-      music: { title: "Music Store", bg: "music_store_interior", large: "music_store_large_props", small: "music_store_small_props", lootName: "Music Gear", lootText: "Found cables and music gear. Wood +1.", resource: "wood", amount: 1 }
+      music: { title: "Music Store", bg: "music_store_interior", large: "music_store_large_props", small: "music_store_small_props", lootName: "Music Gear", lootText: "Found cables and music gear. Wood +1.", resource: "wood", amount: 1 },
+      grocery: { title: "Grocery", bg: "diner_interior", large: "diner_large_props", small: "diner_small_props", lootName: "Food", lootText: "Found shelf-stable food. Food +3.", resource: "food", amount: 3 },
+      laundromat: { title: "Laundromat", bg: "hardware_store_interior", large: "hardware_large_props", small: "hardware_small_props", lootName: "Rags", lootText: "Found cloth, detergent, and usable rags. Medicine +1.", resource: "medicine", amount: 1 },
+      pawn: { title: "Pawn Shop", bg: "music_store_interior", large: "music_store_large_props", small: "music_store_small_props", lootName: "Parts", lootText: "Found trade goods and repair parts. Wood +2.", resource: "wood", amount: 2 },
+      police: { title: "Police Substation", bg: "pharmacy_interior", large: "pharmacy_large_props", small: "pharmacy_small_props", lootName: "Evidence Locker", lootText: "Found emergency supplies. Medicine +1.", resource: "medicine", amount: 1 },
+      motel: { title: "Apartments", bg: "diner_interior", large: "diner_large_props", small: "diner_small_props", lootName: "Room Supplies", lootText: "Found food tucked away in an upstairs room. Food +1.", resource: "food", amount: 1 },
+      alley: { title: "Backlot", bg: "hardware_store_interior", large: "hardware_large_props", small: "hardware_small_props", lootName: "Backlot Stash", lootText: "Found boards and scrap in the backlot. Wood +2.", resource: "wood", amount: 2 }
     };
     return configs[this.storeKey] || configs.diner;
   }
@@ -1789,7 +1985,7 @@ class StoreInteriorScene extends BaseScene {
   tryInteract() {
     const cfg = this.getStoreConfig();
     const dExit = Phaser.Math.Distance.Between(this.player.x, this.player.y, this.exitDoor.x, this.exitDoor.y);
-    if (this.time.now > (this.exitGraceUntil || 0) && dExit < 130) { this.scene.start("MainStreetScene", { spawn: this.returnSpawn }); return; }
+    if (this.time.now > (this.exitGraceUntil || 0) && dExit < 130) { this.scene.start(this.returnScene || "MainStreetScene", { spawn: this.returnSpawn }); return; }
 
     const dLoot = Phaser.Math.Distance.Between(this.player.x, this.player.y, this.lootZone.x, this.lootZone.y);
     if (dLoot < 130) {
@@ -1819,7 +2015,7 @@ class StoreInteriorScene extends BaseScene {
     if (Phaser.Input.Keyboard.JustDown(this.keys.moveAction)) this.pressMovementAction();
     if (Phaser.Input.Keyboard.JustDown(this.keys.shoot)) this.shootPistol();
     this.handlePlayerMovement([this.solidObjects]);
-    if (this.time.now > (this.exitGraceUntil || 0) && this.physics.overlap(this.player, this.exitDoor)) { this.scene.start("MainStreetScene", { spawn: this.returnSpawn }); return; }
+    if (this.time.now > (this.exitGraceUntil || 0) && this.physics.overlap(this.player, this.exitDoor)) { this.scene.start(this.returnScene || "MainStreetScene", { spawn: this.returnSpawn }); return; }
     GameState.minutes += 0.02;
     if (GameState.minutes >= 1440) { GameState.minutes = 0; GameState.day += 1; }
     this.updateHUD();
@@ -1834,7 +2030,7 @@ const config = {
   parent: document.body,
   physics: { default: "arcade", arcade: { debug: false } },
   scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH, width: 1280, height: 720 },
-  scene: [MainStreetScene, AutoShopInteriorScene, StoreInteriorScene]
+  scene: [MainStreetScene, MainStreet200Scene, AutoShopInteriorScene, StoreInteriorScene]
 };
 new Phaser.Game(config);
 </script>
