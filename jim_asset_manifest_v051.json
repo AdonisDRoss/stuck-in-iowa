@@ -1,0 +1,40 @@
+{
+  "version": "v0.5.1",
+  "files": [
+    "index.html",
+    "assets/characters/jim_walk_4dir_128x128_phaser.png",
+    "assets/characters/jim_punch_4dir_128x128_phaser.png",
+    "assets/characters/jim_hurt_ko_4dir_128x128_phaser.png"
+  ],
+  "jim_walk": {
+    "frameWidth": 128,
+    "frameHeight": 128,
+    "columns": 8,
+    "rows": 4,
+    "rowOrder": [
+      "down",
+      "right",
+      "left",
+      "up"
+    ],
+    "animations": {
+      "jim_walk_down": [
+        0,
+        7
+      ],
+      "jim_walk_right": [
+        8,
+        15
+      ],
+      "jim_walk_left": [
+        16,
+        23
+      ],
+      "jim_walk_up": [
+        24,
+        31
+      ]
+    }
+  },
+  "notes": "Upload index.html to repo root and PNGs to assets/characters/. Cache bust with ?v=051."
+}

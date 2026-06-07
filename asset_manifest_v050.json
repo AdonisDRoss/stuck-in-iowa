@@ -1,0 +1,52 @@
+{
+  "version": "0.5.0",
+  "source_repo_checked": "AdonisDRoss/stuck-in-iowa main branch",
+  "assets": {
+    "buildings": [
+      "diner.png",
+      "hardware_store.png",
+      "pharmacy.png",
+      "music_store.png"
+    ],
+    "interiors": [
+      "diner_interior.png",
+      "hardware_store_interior.png",
+      "pharmacy_interior.png",
+      "music_store_interior.png"
+    ],
+    "signs": [
+      "store_signs_256x128.png"
+    ],
+    "props": [
+      "diner_large_props_256x128.png",
+      "diner_small_props_128x128.png",
+      "hardware_large_props_256x128.png",
+      "hardware_small_props_128x128.png",
+      "pharmacy_large_props_256x128.png",
+      "pharmacy_small_props_128x128.png",
+      "music_store_large_props_256x128.png",
+      "music_store_small_props_128x128.png"
+    ]
+  },
+  "spritesheets": {
+    "store_signs": {
+      "path": "assets/signs/store_signs_256x128.png",
+      "frameWidth": 256,
+      "frameHeight": 128,
+      "columns": 4,
+      "rows": 2
+    },
+    "large_props": {
+      "frameWidth": 256,
+      "frameHeight": 128,
+      "columns": 4,
+      "rows": 2
+    },
+    "small_props": {
+      "frameWidth": 128,
+      "frameHeight": 128,
+      "columns": 4,
+      "rows": 2
+    }
+  }
+}
