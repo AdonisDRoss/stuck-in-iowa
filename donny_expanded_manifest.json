@@ -1,0 +1,936 @@
+{
+  "character": "donny",
+  "frameWidth": 128,
+  "frameHeight": 128,
+  "rowOrder": [
+    "down",
+    "up",
+    "left",
+    "right"
+  ],
+  "sheets": {
+    "donny_run": {
+      "path": "assets/characters/donny_run_4dir_128x128_phaser.png",
+      "sourceCleanPath": "assets/characters/donny_run_source_clean_8x4_128x128.png",
+      "frameWidth": 128,
+      "frameHeight": 128,
+      "columns": 8,
+      "rows": 4,
+      "sourceColumns": 8,
+      "sourceRows": 4,
+      "frameRate": 12,
+      "repeat": -1,
+      "animations": {
+        "run_down": {
+          "start": 0,
+          "end": 7,
+          "frameRate": 12,
+          "repeat": -1
+        },
+        "run_up": {
+          "start": 8,
+          "end": 15,
+          "frameRate": 12,
+          "repeat": -1
+        },
+        "run_left": {
+          "start": 16,
+          "end": 23,
+          "frameRate": 12,
+          "repeat": -1
+        },
+        "run_right": {
+          "start": 24,
+          "end": 31,
+          "frameRate": 12,
+          "repeat": -1
+        }
+      }
+    },
+    "donny_jump": {
+      "path": "assets/characters/donny_jump_4dir_128x128_phaser.png",
+      "sourceCleanPath": "assets/characters/donny_jump_source_clean_6x4_128x128.png",
+      "frameWidth": 128,
+      "frameHeight": 128,
+      "columns": 8,
+      "rows": 4,
+      "sourceColumns": 6,
+      "sourceRows": 4,
+      "frameRate": 8,
+      "repeat": 0,
+      "animations": {
+        "jump_down": {
+          "start": 0,
+          "end": 7,
+          "frameRate": 8,
+          "repeat": 0
+        },
+        "jump_up": {
+          "start": 8,
+          "end": 15,
+          "frameRate": 8,
+          "repeat": 0
+        },
+        "jump_left": {
+          "start": 16,
+          "end": 23,
+          "frameRate": 8,
+          "repeat": 0
+        },
+        "jump_right": {
+          "start": 24,
+          "end": 31,
+          "frameRate": 8,
+          "repeat": 0
+        }
+      }
+    },
+    "donny_idle": {
+      "path": "assets/characters/donny_idle_4dir_128x128_phaser.png",
+      "sourceCleanPath": "assets/characters/donny_idle_source_clean_4x4_128x128.png",
+      "frameWidth": 128,
+      "frameHeight": 128,
+      "columns": 8,
+      "rows": 4,
+      "sourceColumns": 4,
+      "sourceRows": 4,
+      "frameRate": 4,
+      "repeat": -1,
+      "animations": {
+        "idle_down": {
+          "start": 0,
+          "end": 7,
+          "frameRate": 4,
+          "repeat": -1
+        },
+        "idle_up": {
+          "start": 8,
+          "end": 15,
+          "frameRate": 4,
+          "repeat": -1
+        },
+        "idle_left": {
+          "start": 16,
+          "end": 23,
+          "frameRate": 4,
+          "repeat": -1
+        },
+        "idle_right": {
+          "start": 24,
+          "end": 31,
+          "frameRate": 4,
+          "repeat": -1
+        }
+      }
+    },
+    "donny_action": {
+      "path": "assets/characters/donny_action_4dir_128x128_phaser.png",
+      "sourceCleanPath": "assets/characters/donny_action_source_clean_6x4_128x128.png",
+      "frameWidth": 128,
+      "frameHeight": 128,
+      "columns": 8,
+      "rows": 4,
+      "sourceColumns": 6,
+      "sourceRows": 4,
+      "frameRate": 8,
+      "repeat": 0,
+      "animations": {
+        "action_down": {
+          "start": 0,
+          "end": 7,
+          "frameRate": 8,
+          "repeat": 0
+        },
+        "action_up": {
+          "start": 8,
+          "end": 15,
+          "frameRate": 8,
+          "repeat": 0
+        },
+        "action_left": {
+          "start": 16,
+          "end": 23,
+          "frameRate": 8,
+          "repeat": 0
+        },
+        "action_right": {
+          "start": 24,
+          "end": 31,
+          "frameRate": 8,
+          "repeat": 0
+        }
+      }
+    },
+    "donny_pickup": {
+      "path": "assets/characters/donny_pickup_4dir_128x128_phaser.png",
+      "sourceCleanPath": "assets/characters/donny_pickup_source_clean_6x4_128x128.png",
+      "frameWidth": 128,
+      "frameHeight": 128,
+      "columns": 8,
+      "rows": 4,
+      "sourceColumns": 6,
+      "sourceRows": 4,
+      "frameRate": 8,
+      "repeat": 0,
+      "animations": {
+        "pickup_down": {
+          "start": 0,
+          "end": 7,
+          "frameRate": 8,
+          "repeat": 0
+        },
+        "pickup_up": {
+          "start": 8,
+          "end": 15,
+          "frameRate": 8,
+          "repeat": 0
+        },
+        "pickup_left": {
+          "start": 16,
+          "end": 23,
+          "frameRate": 8,
+          "repeat": 0
+        },
+        "pickup_right": {
+          "start": 24,
+          "end": 31,
+          "frameRate": 8,
+          "repeat": 0
+        }
+      }
+    },
+    "donny_use": {
+      "path": "assets/characters/donny_use_4dir_128x128_phaser.png",
+      "sourceCleanPath": "assets/characters/donny_use_source_clean_6x4_128x128.png",
+      "frameWidth": 128,
+      "frameHeight": 128,
+      "columns": 8,
+      "rows": 4,
+      "sourceColumns": 6,
+      "sourceRows": 4,
+      "frameRate": 8,
+      "repeat": 0,
+      "animations": {
+        "use_down": {
+          "start": 0,
+          "end": 7,
+          "frameRate": 8,
+          "repeat": 0
+        },
+        "use_up": {
+          "start": 8,
+          "end": 15,
+          "frameRate": 8,
+          "repeat": 0
+        },
+        "use_left": {
+          "start": 16,
+          "end": 23,
+          "frameRate": 8,
+          "repeat": 0
+        },
+        "use_right": {
+          "start": 24,
+          "end": 31,
+          "frameRate": 8,
+          "repeat": 0
+        }
+      }
+    },
+    "donny_reaction": {
+      "path": "assets/characters/donny_reaction_4dir_128x128_phaser.png",
+      "sourceCleanPath": "assets/characters/donny_reaction_source_clean_5x4_128x128.png",
+      "frameWidth": 128,
+      "frameHeight": 128,
+      "columns": 8,
+      "rows": 4,
+      "sourceColumns": 5,
+      "sourceRows": 4,
+      "frameRate": 8,
+      "repeat": 0,
+      "note": "reaction/hurt flinch sheet",
+      "animations": {
+        "reaction_down": {
+          "start": 0,
+          "end": 7,
+          "frameRate": 8,
+          "repeat": 0
+        },
+        "reaction_up": {
+          "start": 8,
+          "end": 15,
+          "frameRate": 8,
+          "repeat": 0
+        },
+        "reaction_left": {
+          "start": 16,
+          "end": 23,
+          "frameRate": 8,
+          "repeat": 0
+        },
+        "reaction_right": {
+          "start": 24,
+          "end": 31,
+          "frameRate": 8,
+          "repeat": 0
+        }
+      }
+    },
+    "donny_ko": {
+      "path": "assets/characters/donny_ko_4dir_128x128_phaser.png",
+      "sourceCleanPath": "assets/characters/donny_ko_source_clean_6x4_128x128.png",
+      "frameWidth": 128,
+      "frameHeight": 128,
+      "columns": 8,
+      "rows": 4,
+      "sourceColumns": 6,
+      "sourceRows": 4,
+      "frameRate": 7,
+      "repeat": 0,
+      "note": "KO/death sheet, final frame held",
+      "animations": {
+        "ko_down": {
+          "start": 0,
+          "end": 7,
+          "frameRate": 7,
+          "repeat": 0
+        },
+        "ko_up": {
+          "start": 8,
+          "end": 15,
+          "frameRate": 7,
+          "repeat": 0
+        },
+        "ko_left": {
+          "start": 16,
+          "end": 23,
+          "frameRate": 7,
+          "repeat": 0
+        },
+        "ko_right": {
+          "start": 24,
+          "end": 31,
+          "frameRate": 7,
+          "repeat": 0
+        }
+      },
+      "corpseFrames": {
+        "down": 7,
+        "up": 15,
+        "left": 23,
+        "right": 31
+      }
+    },
+    "donny_sleep": {
+      "path": "assets/characters/donny_sleep_4dir_128x128_phaser.png",
+      "sourceCleanPath": "assets/characters/donny_sleep_source_clean_6x4_128x128.png",
+      "frameWidth": 128,
+      "frameHeight": 128,
+      "columns": 8,
+      "rows": 4,
+      "sourceColumns": 6,
+      "sourceRows": 4,
+      "frameRate": 4,
+      "repeat": -1,
+      "note": "sleep / wake sheet",
+      "animations": {
+        "sleep_down": {
+          "start": 0,
+          "end": 7,
+          "frameRate": 4,
+          "repeat": -1
+        },
+        "sleep_up": {
+          "start": 8,
+          "end": 15,
+          "frameRate": 4,
+          "repeat": -1
+        },
+        "sleep_left": {
+          "start": 16,
+          "end": 23,
+          "frameRate": 4,
+          "repeat": -1
+        },
+        "sleep_right": {
+          "start": 24,
+          "end": 31,
+          "frameRate": 4,
+          "repeat": -1
+        }
+      }
+    },
+    "donny_drive": {
+      "path": "assets/characters/donny_drive_4dir_128x128_phaser.png",
+      "sourceCleanPath": "assets/characters/donny_drive_source_clean_6x4_128x128.png",
+      "frameWidth": 128,
+      "frameHeight": 128,
+      "columns": 8,
+      "rows": 4,
+      "sourceColumns": 6,
+      "sourceRows": 4,
+      "frameRate": 6,
+      "repeat": 0,
+      "note": "drive / enter vehicle / seated driving / exit pose sheet",
+      "animations": {
+        "drive_down": {
+          "start": 0,
+          "end": 7,
+          "frameRate": 6,
+          "repeat": 0
+        },
+        "drive_up": {
+          "start": 8,
+          "end": 15,
+          "frameRate": 6,
+          "repeat": 0
+        },
+        "drive_left": {
+          "start": 16,
+          "end": 23,
+          "frameRate": 6,
+          "repeat": 0
+        },
+        "drive_right": {
+          "start": 24,
+          "end": 31,
+          "frameRate": 6,
+          "repeat": 0
+        }
+      },
+      "heldDrivingFrames": {
+        "down": 4,
+        "up": 12,
+        "left": 20,
+        "right": 28
+      }
+    },
+    "donny_sit": {
+      "path": "assets/characters/donny_sit_4dir_128x128_phaser.png",
+      "sourceCleanPath": "assets/characters/donny_sit_source_clean_5x4_128x128.png",
+      "frameWidth": 128,
+      "frameHeight": 128,
+      "columns": 8,
+      "rows": 4,
+      "sourceColumns": 5,
+      "sourceRows": 4,
+      "frameRate": 6,
+      "repeat": 0,
+      "note": "sit / seated pose sheet",
+      "animations": {
+        "sit_down": {
+          "start": 0,
+          "end": 7,
+          "frameRate": 6,
+          "repeat": 0
+        },
+        "sit_up": {
+          "start": 8,
+          "end": 15,
+          "frameRate": 6,
+          "repeat": 0
+        },
+        "sit_left": {
+          "start": 16,
+          "end": 23,
+          "frameRate": 6,
+          "repeat": 0
+        },
+        "sit_right": {
+          "start": 24,
+          "end": 31,
+          "frameRate": 6,
+          "repeat": 0
+        }
+      },
+      "heldSittingFrames": {
+        "down": 4,
+        "up": 12,
+        "left": 20,
+        "right": 28
+      }
+    },
+    "donny_slide": {
+      "path": "assets/characters/donny_slide_4dir_128x128_phaser.png",
+      "sourceCleanPath": "assets/characters/donny_slide_source_clean_6x4_128x128.png",
+      "frameWidth": 128,
+      "frameHeight": 128,
+      "columns": 8,
+      "rows": 4,
+      "sourceColumns": 6,
+      "sourceRows": 4,
+      "frameRate": 10,
+      "repeat": 0,
+      "note": "slide / low dodge sheet",
+      "animations": {
+        "slide_down": {
+          "start": 0,
+          "end": 7,
+          "frameRate": 10,
+          "repeat": 0
+        },
+        "slide_up": {
+          "start": 8,
+          "end": 15,
+          "frameRate": 10,
+          "repeat": 0
+        },
+        "slide_left": {
+          "start": 16,
+          "end": 23,
+          "frameRate": 10,
+          "repeat": 0
+        },
+        "slide_right": {
+          "start": 24,
+          "end": 31,
+          "frameRate": 10,
+          "repeat": 0
+        }
+      }
+    },
+    "donny_shoot_pistol": {
+      "path": "assets/characters/donny_shoot_pistol_4dir_128x128_phaser.png",
+      "sourceCleanPath": "assets/characters/donny_shoot_pistol_source_clean_6x4_128x128.png",
+      "frameWidth": 128,
+      "frameHeight": 128,
+      "columns": 8,
+      "rows": 4,
+      "sourceColumns": 6,
+      "sourceRows": 4,
+      "frameRate": 10,
+      "repeat": 0,
+      "note": "shoot pistol sheet, no muzzle flash/fx",
+      "animations": {
+        "shoot_pistol_down": {
+          "start": 0,
+          "end": 7,
+          "frameRate": 10,
+          "repeat": 0
+        },
+        "shoot_pistol_up": {
+          "start": 8,
+          "end": 15,
+          "frameRate": 10,
+          "repeat": 0
+        },
+        "shoot_pistol_left": {
+          "start": 16,
+          "end": 23,
+          "frameRate": 10,
+          "repeat": 0
+        },
+        "shoot_pistol_right": {
+          "start": 24,
+          "end": 31,
+          "frameRate": 10,
+          "repeat": 0
+        }
+      },
+      "heldPistolFireFrames": {
+        "down": 4,
+        "up": 12,
+        "left": 20,
+        "right": 28
+      }
+    },
+    "donny_shoot_rifle": {
+      "path": "assets/characters/donny_shoot_rifle_4dir_128x128_phaser.png",
+      "sourceCleanPath": "assets/characters/donny_shoot_rifle_source_clean_6x4_128x128.png",
+      "frameWidth": 128,
+      "frameHeight": 128,
+      "columns": 8,
+      "rows": 4,
+      "sourceColumns": 6,
+      "sourceRows": 4,
+      "frameRate": 10,
+      "repeat": 0,
+      "note": "shoot rifle sheet, no muzzle flash/fx",
+      "animations": {
+        "shoot_rifle_down": {
+          "start": 0,
+          "end": 7,
+          "frameRate": 10,
+          "repeat": 0
+        },
+        "shoot_rifle_up": {
+          "start": 8,
+          "end": 15,
+          "frameRate": 10,
+          "repeat": 0
+        },
+        "shoot_rifle_left": {
+          "start": 16,
+          "end": 23,
+          "frameRate": 10,
+          "repeat": 0
+        },
+        "shoot_rifle_right": {
+          "start": 24,
+          "end": 31,
+          "frameRate": 10,
+          "repeat": 0
+        }
+      },
+      "heldRifleFireFrames": {
+        "down": 4,
+        "up": 12,
+        "left": 20,
+        "right": 28
+      }
+    },
+    "donny_throw_item": {
+      "path": "assets/characters/donny_throw_item_4dir_128x128_phaser.png",
+      "sourceCleanPath": "assets/characters/donny_throw_item_source_clean_6x4_128x128.png",
+      "frameWidth": 128,
+      "frameHeight": 128,
+      "columns": 8,
+      "rows": 4,
+      "sourceColumns": 6,
+      "sourceRows": 4,
+      "frameRate": 10,
+      "repeat": 0,
+      "note": "throw item sheet, no projectile/fx baked in",
+      "animations": {
+        "throw_item_down": {
+          "start": 0,
+          "end": 7,
+          "frameRate": 10,
+          "repeat": 0
+        },
+        "throw_item_up": {
+          "start": 8,
+          "end": 15,
+          "frameRate": 10,
+          "repeat": 0
+        },
+        "throw_item_left": {
+          "start": 16,
+          "end": 23,
+          "frameRate": 10,
+          "repeat": 0
+        },
+        "throw_item_right": {
+          "start": 24,
+          "end": 31,
+          "frameRate": 10,
+          "repeat": 0
+        }
+      }
+    },
+    "donny_melee_light": {
+      "path": "assets/characters/donny_melee_light_4dir_128x128_phaser.png",
+      "sourceCleanPath": "assets/characters/donny_melee_light_source_clean_5x4_128x128.png",
+      "frameWidth": 128,
+      "frameHeight": 128,
+      "columns": 8,
+      "rows": 4,
+      "sourceColumns": 5,
+      "sourceRows": 4,
+      "frameRate": 14,
+      "repeat": 0,
+      "note": "light melee / quick punch sheet",
+      "animations": {
+        "melee_light_down": {
+          "start": 0,
+          "end": 7,
+          "frameRate": 14,
+          "repeat": 0
+        },
+        "melee_light_up": {
+          "start": 8,
+          "end": 15,
+          "frameRate": 14,
+          "repeat": 0
+        },
+        "melee_light_left": {
+          "start": 16,
+          "end": 23,
+          "frameRate": 14,
+          "repeat": 0
+        },
+        "melee_light_right": {
+          "start": 24,
+          "end": 31,
+          "frameRate": 14,
+          "repeat": 0
+        }
+      }
+    },
+    "donny_melee_heavy": {
+      "path": "assets/characters/donny_melee_heavy_4dir_128x128_phaser.png",
+      "sourceCleanPath": "assets/characters/donny_melee_heavy_source_clean_6x4_128x128.png",
+      "frameWidth": 128,
+      "frameHeight": 128,
+      "columns": 8,
+      "rows": 4,
+      "sourceColumns": 6,
+      "sourceRows": 4,
+      "frameRate": 10,
+      "repeat": 0,
+      "note": "heavy melee / power punch sheet",
+      "animations": {
+        "melee_heavy_down": {
+          "start": 0,
+          "end": 7,
+          "frameRate": 10,
+          "repeat": 0
+        },
+        "melee_heavy_up": {
+          "start": 8,
+          "end": 15,
+          "frameRate": 10,
+          "repeat": 0
+        },
+        "melee_heavy_left": {
+          "start": 16,
+          "end": 23,
+          "frameRate": 10,
+          "repeat": 0
+        },
+        "melee_heavy_right": {
+          "start": 24,
+          "end": 31,
+          "frameRate": 10,
+          "repeat": 0
+        }
+      }
+    },
+    "donny_block": {
+      "path": "assets/characters/donny_block_4dir_128x128_phaser.png",
+      "sourceCleanPath": "assets/characters/donny_block_source_clean_4x4_128x128.png",
+      "frameWidth": 128,
+      "frameHeight": 128,
+      "columns": 8,
+      "rows": 4,
+      "sourceColumns": 4,
+      "sourceRows": 4,
+      "frameRate": 8,
+      "repeat": 0,
+      "note": "block / guard stance sheet",
+      "animations": {
+        "block_down": {
+          "start": 0,
+          "end": 7,
+          "frameRate": 8,
+          "repeat": 0
+        },
+        "block_up": {
+          "start": 8,
+          "end": 15,
+          "frameRate": 8,
+          "repeat": 0
+        },
+        "block_left": {
+          "start": 16,
+          "end": 23,
+          "frameRate": 8,
+          "repeat": 0
+        },
+        "block_right": {
+          "start": 24,
+          "end": 31,
+          "frameRate": 8,
+          "repeat": 0
+        }
+      }
+    },
+    "donny_dodge": {
+      "path": "assets/characters/donny_dodge_4dir_128x128_phaser.png",
+      "sourceCleanPath": "assets/characters/donny_dodge_source_clean_6x4_128x128.png",
+      "frameWidth": 128,
+      "frameHeight": 128,
+      "columns": 8,
+      "rows": 4,
+      "sourceColumns": 6,
+      "sourceRows": 4,
+      "frameRate": 12,
+      "repeat": 0,
+      "note": "dodge / roll / evade sheet",
+      "animations": {
+        "dodge_down": {
+          "start": 0,
+          "end": 7,
+          "frameRate": 12,
+          "repeat": 0
+        },
+        "dodge_up": {
+          "start": 8,
+          "end": 15,
+          "frameRate": 12,
+          "repeat": 0
+        },
+        "dodge_left": {
+          "start": 16,
+          "end": 23,
+          "frameRate": 12,
+          "repeat": 0
+        },
+        "dodge_right": {
+          "start": 24,
+          "end": 31,
+          "frameRate": 12,
+          "repeat": 0
+        }
+      }
+    },
+    "donny_crawl": {
+      "path": "assets/characters/donny_crawl_4dir_128x128_phaser.png",
+      "sourceCleanPath": "assets/characters/donny_crawl_source_clean_8x4_128x128.png",
+      "frameWidth": 128,
+      "frameHeight": 128,
+      "columns": 8,
+      "rows": 4,
+      "sourceColumns": 8,
+      "sourceRows": 4,
+      "frameRate": 8,
+      "repeat": -1,
+      "note": "crawl / prone movement sheet",
+      "animations": {
+        "crawl_down": {
+          "start": 0,
+          "end": 7,
+          "frameRate": 8,
+          "repeat": -1
+        },
+        "crawl_up": {
+          "start": 8,
+          "end": 15,
+          "frameRate": 8,
+          "repeat": -1
+        },
+        "crawl_left": {
+          "start": 16,
+          "end": 23,
+          "frameRate": 8,
+          "repeat": -1
+        },
+        "crawl_right": {
+          "start": 24,
+          "end": 31,
+          "frameRate": 8,
+          "repeat": -1
+        }
+      }
+    },
+    "donny_carry": {
+      "path": "assets/characters/donny_carry_4dir_128x128_phaser.png",
+      "sourceCleanPath": "assets/characters/donny_carry_source_clean_6x4_128x128.png",
+      "frameWidth": 128,
+      "frameHeight": 128,
+      "columns": 6,
+      "rows": 4,
+      "sourceColumns": 6,
+      "sourceRows": 4,
+      "frameRate": 8,
+      "repeat": -1,
+      "note": "carry / carry-loop sheet with prop removed",
+      "animations": {
+        "carry_down": {
+          "start": 0,
+          "end": 5,
+          "frameRate": 8,
+          "repeat": -1
+        },
+        "carry_up": {
+          "start": 6,
+          "end": 11,
+          "frameRate": 8,
+          "repeat": -1
+        },
+        "carry_left": {
+          "start": 12,
+          "end": 17,
+          "frameRate": 8,
+          "repeat": -1
+        },
+        "carry_right": {
+          "start": 18,
+          "end": 23,
+          "frameRate": 8,
+          "repeat": -1
+        }
+      }
+    },
+    "donny_talk": {
+      "path": "assets/characters/donny_talk_4dir_128x128_phaser.png",
+      "sourceCleanPath": "assets/characters/donny_talk_source_clean_6x4_128x128.png",
+      "frameWidth": 128,
+      "frameHeight": 128,
+      "columns": 6,
+      "rows": 4,
+      "sourceColumns": 6,
+      "sourceRows": 4,
+      "frameRate": 8,
+      "repeat": -1,
+      "note": "talk / interact / gesture sheet",
+      "animations": {
+        "talk_down": {
+          "start": 0,
+          "end": 5,
+          "frameRate": 8,
+          "repeat": -1
+        },
+        "talk_up": {
+          "start": 6,
+          "end": 11,
+          "frameRate": 8,
+          "repeat": -1
+        },
+        "talk_left": {
+          "start": 12,
+          "end": 17,
+          "frameRate": 8,
+          "repeat": -1
+        },
+        "talk_right": {
+          "start": 18,
+          "end": 23,
+          "frameRate": 8,
+          "repeat": -1
+        }
+      }
+    },
+    "donny_climb": {
+      "path": "assets/characters/donny_climb_4dir_128x128_phaser.png",
+      "sourceCleanPath": "assets/characters/donny_climb_source_clean_8x4_128x128.png",
+      "frameWidth": 128,
+      "frameHeight": 128,
+      "columns": 8,
+      "rows": 4,
+      "sourceColumns": 8,
+      "sourceRows": 4,
+      "frameRate": 10,
+      "repeat": -1,
+      "note": "climb / ladder sheet",
+      "animations": {
+        "climb_down": {
+          "start": 0,
+          "end": 7,
+          "frameRate": 10,
+          "repeat": -1
+        },
+        "climb_up": {
+          "start": 8,
+          "end": 15,
+          "frameRate": 10,
+          "repeat": -1
+        },
+        "climb_left": {
+          "start": 16,
+          "end": 23,
+          "frameRate": 10,
+          "repeat": -1
+        },
+        "climb_right": {
+          "start": 24,
+          "end": 31,
+          "frameRate": 10,
+          "repeat": -1
+        }
+      }
+    }
+  },
+  "version": "v8",
+  "lastUpdated": "2026-06-07"
+}
