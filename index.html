@@ -36,7 +36,11 @@ const GameState = {
   returnedWrench: false,
   jimFollowing: false,
   safehouseUnlocked: false,
-  inventory: []
+  inventory: [],
+  musicOn: true,
+  musicVolume: 0.45,
+  bgMusic: null,
+  pausedMenuOpen: false
 };
 
 class BaseScene extends Phaser.Scene {
@@ -122,8 +126,14 @@ class BaseScene extends Phaser.Scene {
     this.makeButton(1060, 575, "X", "x");
     this.makeButton(1180, 575, "B", "b");
     this.makeButton(1120, 645, "A", "a");
+    const selectHit = this.add.rectangle(1060, 650, 88, 34, 0x000000, 0.01).setInteractive().setScrollFactor(0).setDepth(1000);
+    const startHit = this.add.rectangle(1190, 650, 88, 34, 0x000000, 0.01).setInteractive().setScrollFactor(0).setDepth(1000);
+
     this.add.text(1060, 650, "SELECT", { fontSize: "13px", color: "#ffffff", fontFamily: "Arial" }).setOrigin(0.5).setScrollFactor(0).setDepth(1001);
     this.add.text(1190, 650, "START", { fontSize: "13px", color: "#ffffff", fontFamily: "Arial" }).setOrigin(0.5).setScrollFactor(0).setDepth(1001);
+
+    selectHit.on("pointerdown", () => this.toggleMusic());
+    startHit.on("pointerdown", () => this.togglePauseMenu());
   }
 
   makeButton(x, y, label, key) {
@@ -185,6 +195,129 @@ class BaseScene extends Phaser.Scene {
     this.time.delayedCall(3500, () => { if (box && box.active) box.destroy(); });
   }
 
+
+  ensureMusic(forcePlay = false) {
+    if (!this.sound) return;
+
+    if (!GameState.bgMusic) {
+      GameState.bgMusic = this.sound.add("bg_music", {
+        loop: true,
+        volume: GameState.musicVolume
+      });
+    }
+
+    GameState.bgMusic.setVolume(GameState.musicOn ? GameState.musicVolume : 0);
+
+    if ((GameState.musicOn || forcePlay) && !GameState.bgMusic.isPlaying) {
+      GameState.bgMusic.play();
+    }
+  }
+
+  togglePauseMenu() {
+    GameState.pausedMenuOpen = !GameState.pausedMenuOpen;
+
+    if (GameState.pausedMenuOpen) {
+      this.showPauseMenu();
+    } else {
+      this.hidePauseMenu();
+    }
+  }
+
+  showPauseMenu() {
+    if (this.pauseMenu) this.pauseMenu.destroy();
+
+    const box = this.add.container(640, 360).setScrollFactor(0).setDepth(3000);
+    const bg = this.add.rectangle(0, 0, 620, 360, 0x000000, 0.86).setStrokeStyle(2, 0xffffff, 0.45);
+
+    const title = this.add.text(0, -140, "PAUSED", {
+      fontSize: "34px",
+      color: "#ffff00",
+      fontFamily: "Arial"
+    }).setOrigin(0.5);
+
+    const song = this.add.text(0, -95, "Music: Grain Silo Ghosts", {
+      fontSize: "18px",
+      color: "#ffffff",
+      fontFamily: "Arial"
+    }).setOrigin(0.5);
+
+    this.musicStatusText = this.add.text(0, -45, "", {
+      fontSize: "20px",
+      color: "#d6ffd6",
+      fontFamily: "Arial"
+    }).setOrigin(0.5);
+
+    const toggleBtn = this.add.rectangle(0, 20, 260, 44, 0x333333, 0.95)
+      .setInteractive()
+      .on("pointerdown", () => this.toggleMusic());
+
+    const toggleTxt = this.add.text(0, 20, "MUSIC ON / OFF", {
+      fontSize: "17px",
+      color: "#ffffff",
+      fontFamily: "Arial"
+    }).setOrigin(0.5);
+
+    const downBtn = this.add.rectangle(-100, 85, 80, 44, 0x333333, 0.95)
+      .setInteractive()
+      .on("pointerdown", () => this.changeMusicVolume(-0.10));
+
+    const upBtn = this.add.rectangle(100, 85, 80, 44, 0x333333, 0.95)
+      .setInteractive()
+      .on("pointerdown", () => this.changeMusicVolume(0.10));
+
+    const downTxt = this.add.text(-100, 85, "- VOL", {
+      fontSize: "16px",
+      color: "#ffffff",
+      fontFamily: "Arial"
+    }).setOrigin(0.5);
+
+    const upTxt = this.add.text(100, 85, "+ VOL", {
+      fontSize: "16px",
+      color: "#ffffff",
+      fontFamily: "Arial"
+    }).setOrigin(0.5);
+
+    const close = this.add.text(0, 145, "Press START / P to return", {
+      fontSize: "15px",
+      color: "#bbbbbb",
+      fontFamily: "Arial"
+    }).setOrigin(0.5);
+
+    box.add([bg, title, song, this.musicStatusText, toggleBtn, toggleTxt, downBtn, upBtn, downTxt, upTxt, close]);
+    this.pauseMenu = box;
+    this.updatePauseMenuText();
+  }
+
+  hidePauseMenu() {
+    if (this.pauseMenu) {
+      this.pauseMenu.destroy();
+      this.pauseMenu = null;
+    }
+  }
+
+  updatePauseMenuText() {
+    if (!this.musicStatusText) return;
+    const pct = Math.round(GameState.musicVolume * 100);
+    this.musicStatusText.setText("Music: " + (GameState.musicOn ? "ON" : "OFF") + "   Volume: " + pct + "%");
+  }
+
+  toggleMusic() {
+    GameState.musicOn = !GameState.musicOn;
+    this.ensureMusic(true);
+    if (GameState.bgMusic) {
+      GameState.bgMusic.setVolume(GameState.musicOn ? GameState.musicVolume : 0);
+    }
+    this.updatePauseMenuText();
+  }
+
+  changeMusicVolume(amount) {
+    GameState.musicVolume = Phaser.Math.Clamp(GameState.musicVolume + amount, 0, 1);
+    if (GameState.bgMusic) {
+      GameState.bgMusic.setVolume(GameState.musicOn ? GameState.musicVolume : 0);
+    }
+    this.updatePauseMenuText();
+  }
+
   handlePlayerMovement(colliders) {
     const speed = 240;
     this.player.setVelocity(0);
@@ -243,6 +376,7 @@ class MainStreetScene extends BaseScene {
     this.load.image("road_tiles", "assets/tiles/road_tiles_32x32.png?v=031");
     this.load.spritesheet("mainstreet_props", "assets/props/mainstreet_props_64x64.png?v=031", { frameWidth: 64, frameHeight: 64 });
     this.load.spritesheet("farmer_walk", "assets/zombies/farmer_walker_walk.png?v=031", { frameWidth: 256, frameHeight: 256 });
+    this.load.audio("bg_music", "assets/audio/Grain%20Silo%20Ghosts.mp3?v=032");
   }
 
   create(data) {
@@ -258,9 +392,11 @@ class MainStreetScene extends BaseScene {
     this.createPlayerAnims();
     this.createJim();
     this.createZombie();
-    this.keys = this.input.keyboard.addKeys({ up:"W", down:"S", left:"A", right:"D", interact:"E", attack:"SPACE" });
-    this.createHUD("v0.3.1 - Props Path Fix");
+    this.keys = this.input.keyboard.addKeys({ up:"W", down:"S", left:"A", right:"D", interact:"E", attack:"SPACE", pause:"P", music:"M" });
+    this.createHUD("v0.3.2 - Music Pause Menu");
     this.createControls();
+    this.ensureMusic();
+    this.input.once("pointerdown", () => this.ensureMusic(true));
   }
 
   makeMap() {
@@ -469,6 +605,13 @@ class MainStreetScene extends BaseScene {
 
   update() {
     this.handleVirtualStick();
+    if (Phaser.Input.Keyboard.JustDown(this.keys.pause)) this.togglePauseMenu();
+    if (Phaser.Input.Keyboard.JustDown(this.keys.music)) this.toggleMusic();
+    if (GameState.pausedMenuOpen) {
+      this.player.setVelocity(0);
+      this.updateHUD();
+      return;
+    }
     if (Phaser.Input.Keyboard.JustDown(this.keys.interact)) this.tryInteract();
     if (Phaser.Input.Keyboard.JustDown(this.keys.attack)) this.attack();
     this.handlePlayerMovement([this.autoShopBlocker, this.solidObjects]);
@@ -485,6 +628,7 @@ class AutoShopInteriorScene extends BaseScene {
   preload() {
     this.load.spritesheet("donny", "assets/characters/donny_walk_4dir_128x128_phaser.png?v=030", { frameWidth: 128, frameHeight: 128 });
     this.load.spritesheet("donny_punch", "assets/characters/donny_punch_4dir_128x128_phaser.png?v=030", { frameWidth: 128, frameHeight: 128 });
+    this.load.audio("bg_music", "assets/audio/Grain%20Silo%20Ghosts.mp3?v=032");
   }
   create() {
     this.setupMobile();
@@ -494,9 +638,11 @@ class AutoShopInteriorScene extends BaseScene {
     this.makeInterior();
     this.createPlayer(640, 560);
     this.createPlayerAnims();
-    this.keys = this.input.keyboard.addKeys({ up:"W", down:"S", left:"A", right:"D", interact:"E", attack:"SPACE" });
-    this.createHUD("v0.3.0 - Auto Shop Interior");
+    this.keys = this.input.keyboard.addKeys({ up:"W", down:"S", left:"A", right:"D", interact:"E", attack:"SPACE", pause:"P", music:"M" });
+    this.createHUD("v0.3.2 - Auto Shop Interior");
     this.createControls();
+    this.ensureMusic();
+    this.input.once("pointerdown", () => this.ensureMusic(true));
   }
   makeInterior() {
     this.add.rectangle(640, 360, 1280, 720, 0x2a2a2a);
@@ -534,6 +680,13 @@ class AutoShopInteriorScene extends BaseScene {
   }
   update() {
     this.handleVirtualStick();
+    if (Phaser.Input.Keyboard.JustDown(this.keys.pause)) this.togglePauseMenu();
+    if (Phaser.Input.Keyboard.JustDown(this.keys.music)) this.toggleMusic();
+    if (GameState.pausedMenuOpen) {
+      this.player.setVelocity(0);
+      this.updateHUD();
+      return;
+    }
     if (Phaser.Input.Keyboard.JustDown(this.keys.interact)) this.tryInteract();
     if (Phaser.Input.Keyboard.JustDown(this.keys.attack)) this.attack();
     this.handlePlayerMovement([this.solidObjects]);
