@@ -354,7 +354,7 @@ class BaseScene extends Phaser.Scene {
     this.pistolSprite = this.add.image(this.player.x, this.player.y, "pistol");
     this.pistolSprite.setVisible(false);
     this.pistolSprite.setOrigin(0.5, 0.5);
-    this.pistolSprite.setScale(0.30);
+    this.pistolSprite.setScale(0.26);
     this.pistolSprite.setDepth(2001);
   }
 
@@ -365,26 +365,14 @@ class BaseScene extends Phaser.Scene {
   }
 
   getPistolPose(face) {
-    // Pistol image is left-facing by default. FlipX makes it fire right.
-    // Larger scale so it reads clearly during the held shooting pose.
+    // Pistol image is treated as left-facing by default. FlipX makes it fire right.
     const poses = {
-      right: { x: 58, y: -18, angle: 0,   flipX: true,  scale: 0.30, flashX: 96,  flashY: -18 },
-      left:  { x: -58, y: -18, angle: 0,   flipX: false, scale: 0.30, flashX: -96, flashY: -18 },
-      up:    { x: 12, y: -58, angle: 90,  flipX: false, scale: 0.27, flashX: 12,  flashY: -100 },
-      down:  { x: 18, y: 30,  angle: -90, flipX: false, scale: 0.27, flashX: 18,  flashY: 78 }
+      right: { x: 48, y: -17, angle: 0,   flipX: true,  scale: 0.26, flashX: 82,  flashY: -17 },
+      left:  { x: -48, y: -17, angle: 0,   flipX: false, scale: 0.26, flashX: -82, flashY: -17 },
+      up:    { x: 12, y: -52, angle: 90,  flipX: false, scale: 0.24, flashX: 12,  flashY: -88 },
+      down:  { x: 16, y: 24,  angle: -90, flipX: false, scale: 0.24, flashX: 16,  flashY: 66 }
     };
     return poses[face] || poses.right;
-  }
-
-  getHeldShootFrame(face) {
-    // Use the strongest extended-arm punch frame as the shooting hold frame.
-    const frames = {
-      down: 4,
-      right: 10,
-      left: 10,
-      up: 22
-    };
-    return frames[face] ?? 10;
   }
 
   shootPistol() {
@@ -394,16 +382,14 @@ class BaseScene extends Phaser.Scene {
     this.shotFacing = shotFace;
     this.isShooting = true;
     this.isAttacking = true;
-    this.attackCooldown = true;
 
-    // Lock Donny on the correct extended-arm frame for 1.5 seconds.
-    this.player.setVelocity(0, 0);
+    // Hold Donny on the extended-arm punch frame while the pistol is visible.
     this.player.setTexture("donny_punch");
-    this.player.anims.stop();
-    this.player.setFrame(this.getHeldShootFrame(shotFace));
     this.player.setFlipX(shotFace === "left");
+    const holdFrame = shotFace === "up" ? 22 : shotFace === "down" ? 4 : 10;
+    this.player.anims.stop();
+    this.player.setFrame(holdFrame);
 
-    // Pistol appears only during this held fire pose.
     this.updatePistolOverlay(true, shotFace);
 
     const p = this.getPistolPose(shotFace);
@@ -412,14 +398,14 @@ class BaseScene extends Phaser.Scene {
       this.player.y + p.flashY,
       10,
       0xffcc33,
-      0.8
+      0.75
     ).setDepth(2002);
     this.time.delayedCall(90, () => flash.destroy());
 
     this.time.delayedCall(1500, () => {
+      if (this.shotFacing !== shotFace) return;
       this.isShooting = false;
       this.isAttacking = false;
-      this.attackCooldown = false;
       this.shotFacing = null;
       this.player.setTexture("donny");
       this.player.setFlipX(false);
@@ -510,15 +496,15 @@ class MainStreetScene extends BaseScene {
     });
     this.load.spritesheet("donny", "assets/characters/donny_walk_4dir_128x128_phaser.png?v=030", { frameWidth: 128, frameHeight: 128 });
     this.load.spritesheet("donny_punch", "assets/characters/donny_punch_4dir_128x128_phaser.png?v=030", { frameWidth: 128, frameHeight: 128 });
-    this.load.image("pistol", "assets/weapons/pistol.png?v=044");
+    this.load.image("pistol", "assets/weapons/pistol.png?v=042");
     this.load.image("auto_shop", "assets/buildings/auto_shop.png?v=030");
     this.load.image("auto_repair_sign", "assets/signs/auto_repair_sign.png?v=038");
     this.load.image("road_tiles", "assets/tiles/road_tiles_32x32.png?v=033");
     this.load.spritesheet("mainstreet_large_props", "assets/props/mainstreet_large_props_256x128.png?v=041", { frameWidth: 256, frameHeight: 128 });
     this.load.spritesheet("mainstreet_small_props", "assets/props/mainstreet_small_props_128x128.png?v=041", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("zombie_worker_walk", "assets/zombies/zombie_worker_walk.png?v=044", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("zombie_worker_attack", "assets/zombies/zombie_worker_attack.png?v=044", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("zombie_worker_hurt_ko", "assets/zombies/zombie_worker_hurt_ko.png?v=044", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("zombie_worker_walk", "assets/zombies/zombie_worker_walk.png?v=045", { frameWidth: 182, frameHeight: 180 });
+    this.load.spritesheet("zombie_worker_attack", "assets/zombies/zombie_worker_attack.png?v=045", { frameWidth: 182, frameHeight: 180 });
+    this.load.spritesheet("zombie_worker_hurt_ko", "assets/zombies/zombie_worker_hurt_ko.png?v=045", { frameWidth: 182, frameHeight: 180 });
     this.load.audio("bg_music", "assets/audio/Grain Silo Ghosts.mp3?v=033");
   }
 
@@ -533,11 +519,11 @@ class MainStreetScene extends BaseScene {
     const spawnY = data && data.fromInterior ? 520 : 720;
     this.createPlayer(spawnX, spawnY);
     this.createPlayerAnims();
-    this.createZombieAnims();
     this.createJim();
+    this.createZombieAnims();
     this.createZombie();
     this.keys = this.input.keyboard.addKeys({ up:"W", down:"S", left:"A", right:"D", interact:"E", attack:"SPACE", shoot:"F", pause:"P", music:"M" });
-    this.createHUD("v0.4.4 - Worker Zombie + Held Pistol Shot");
+    this.createHUD("v0.4.5 - Exact 182x180 Worker Zombie");
     this.createControls();
     this.ensureMusic();
     this.input.once("pointerdown", () => this.ensureMusic(true));
@@ -589,8 +575,8 @@ class MainStreetScene extends BaseScene {
     // Row 2: storefronts
     this.makeStreetLargeProp(820, 420, 3, 0.46, 120, 40);      // tire rack
     this.makeStreetLargeProp(1465, 420, 2, 0.42, 120, 50);     // dumpster
-    this.makeStreetLargeProp(515, 475, 0, 0.70, 185, 64);      // abandoned pickup - larger
-    this.makeStreetLargeProp(1210, 510, 1, 0.68, 175, 60);     // abandoned sedan - larger
+    this.makeStreetLargeProp(515, 475, 0, 0.48, 130, 48);      // abandoned pickup
+    this.makeStreetLargeProp(1210, 510, 1, 0.46, 120, 44);     // abandoned sedan
 
     // assets/props/mainstreet_small_props_128x128.png
     this.makeStreetSmallProp(265, 685, 0, 0.55, 32, 42);       // cone / marker
@@ -648,6 +634,12 @@ class MainStreetScene extends BaseScene {
     return this.makePropSprite("mainstreet_small_props", x, y, frame, scale, hitW, hitH, rotateVertical);
   }
 
+  createJim() {
+    this.jim = this.add.rectangle(1030, 500, 42, 62, 0x00ffff);
+    this.jimLabel = this.add.text(1005, 450, "JIM", { fontSize:"18px", color:"#ffffff", fontFamily:"Arial" });
+    if (GameState.safehouseUnlocked) { this.jim.x = 1150; this.jim.y = 500; }
+  }
+
   createZombieAnims() {
     const make = (key, tex, start, end, rate, repeat) => {
       if (!this.textures.exists(tex)) return;
@@ -655,28 +647,30 @@ class MainStreetScene extends BaseScene {
         this.anims.create({ key, frames: this.anims.generateFrameNumbers(tex, { start, end }), frameRate: rate, repeat });
       }
     };
-    make("zombie_worker_down", "zombie_worker_walk", 0, 7, 7, -1);
-    make("zombie_worker_up", "zombie_worker_walk", 8, 15, 7, -1);
-    make("zombie_worker_right", "zombie_worker_walk", 16, 23, 7, -1);
-    make("zombie_worker_left", "zombie_worker_walk", 24, 31, 7, -1);
-    make("zombie_worker_attack_down", "zombie_worker_attack", 0, 7, 8, 0);
-    make("zombie_worker_die_down", "zombie_worker_hurt_ko", 0, 7, 8, 0);
-  }
 
-  createJim() {
-    this.jim = this.add.rectangle(1030, 500, 42, 62, 0x00ffff);
-    this.jimLabel = this.add.text(1005, 450, "JIM", { fontSize:"18px", color:"#ffffff", fontFamily:"Arial" });
-    if (GameState.safehouseUnlocked) { this.jim.x = 1150; this.jim.y = 500; }
+    make("zombie_worker_walk_down", "zombie_worker_walk", 0, 7, 7, -1);
+    make("zombie_worker_walk_up", "zombie_worker_walk", 8, 15, 7, -1);
+    make("zombie_worker_walk_right", "zombie_worker_walk", 16, 23, 7, -1);
+    make("zombie_worker_walk_left", "zombie_worker_walk", 24, 31, 7, -1);
+
+    make("zombie_worker_attack_down", "zombie_worker_attack", 0, 7, 8, 0);
+    make("zombie_worker_attack_up", "zombie_worker_attack", 8, 15, 8, 0);
+    make("zombie_worker_attack_right", "zombie_worker_attack", 16, 23, 8, 0);
+    make("zombie_worker_attack_left", "zombie_worker_attack", 24, 31, 8, 0);
+
+    make("zombie_worker_die_down", "zombie_worker_hurt_ko", 0, 7, 7, 0);
+    make("zombie_worker_die_up", "zombie_worker_hurt_ko", 8, 15, 7, 0);
+    make("zombie_worker_die_right", "zombie_worker_hurt_ko", 16, 23, 7, 0);
+    make("zombie_worker_die_left", "zombie_worker_hurt_ko", 24, 31, 7, 0);
   }
 
   createZombie() {
     if (GameState.zombieDead) return;
     this.zombie = this.physics.add.sprite(350, 1180, "zombie_worker_walk", 0);
-    this.zombie.setFrame(0);
-    this.zombie.setScale(1.0);
+    this.zombie.setScale(0.70);
     this.zombie.setCollideWorldBounds(true);
-    this.zombie.body.setSize(40, 50);
-    this.zombie.body.setOffset(44, 74);
+    this.zombie.body.setSize(48, 70);
+    this.zombie.body.setOffset(67, 82);
     this.zombie.hp = 100;
     this.zombieFacing = "down";
     this.zombieLabel = this.add.text(295, 1130, "WORKER WALKER", { fontSize:"15px", color:"#d6ffd6", fontFamily:"Arial" });
@@ -715,9 +709,15 @@ class MainStreetScene extends BaseScene {
     if (this.zombie) {
       this.zombie.setVelocity(0, 0);
       this.zombie.setTexture("zombie_worker_hurt_ko");
-      this.zombie.setFrame(7);
-      this.zombie.setTint(0xaaaaaa);
-      this.zombie.body.enable = false;
+      const dieKey = "zombie_worker_die_" + (this.zombieFacing || "down");
+      this.zombie.anims.play(dieKey, true);
+      this.zombie.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
+        if (!this.zombie) return;
+        const corpseFrame = this.zombieFacing === "up" ? 15 : this.zombieFacing === "right" ? 23 : this.zombieFacing === "left" ? 31 : 7;
+        this.zombie.setFrame(corpseFrame);
+        this.zombie.body.enable = false;
+        this.zombie.setTint(0xaaaaaa);
+      });
     }
     if (this.zombieLabel) this.zombieLabel.destroy();
     GameState.mission = "Search Auto Shop Toolbox";
@@ -726,23 +726,27 @@ class MainStreetScene extends BaseScene {
 
   updateZombie() {
     if (!this.zombie || !this.zombie.active || GameState.zombieDead) return;
+
+    const dx = this.player.x - this.zombie.x;
+    const dy = this.player.y - this.zombie.y;
     const zombieDist = Phaser.Math.Distance.Between(this.zombie.x, this.zombie.y, this.player.x, this.player.y);
+
+    if (Math.abs(dx) > Math.abs(dy)) {
+      this.zombieFacing = dx < 0 ? "left" : "right";
+    } else {
+      this.zombieFacing = dy < 0 ? "up" : "down";
+    }
+
     if (zombieDist < 600) {
-      const dx = this.player.x - this.zombie.x;
-      const dy = this.player.y - this.zombie.y;
       const angle = Phaser.Math.Angle.Between(this.zombie.x, this.zombie.y, this.player.x, this.player.y);
       this.zombie.x += Math.cos(angle) * 0.9;
       this.zombie.y += Math.sin(angle) * 0.9;
-
-      if (Math.abs(dx) > Math.abs(dy)) this.zombieFacing = dx < 0 ? "left" : "right";
-      else this.zombieFacing = dy < 0 ? "up" : "down";
-      this.zombie.anims.play("zombie_worker_" + this.zombieFacing, true);
+      this.zombie.anims.play("zombie_worker_walk_" + this.zombieFacing, true);
     } else {
       this.zombie.anims.stop();
-      const idleFrame = { down:0, up:8, right:16, left:24 }[this.zombieFacing || "down"] || 0;
-      this.zombie.setTexture("zombie_worker_walk");
-      this.zombie.setFrame(idleFrame);
+      this.zombie.setFrame(this.zombieFacing === "up" ? 8 : this.zombieFacing === "right" ? 16 : this.zombieFacing === "left" ? 24 : 0);
     }
+
     if (this.zombieLabel) { this.zombieLabel.x = this.zombie.x - 55; this.zombieLabel.y = this.zombie.y - 70; }
   }
 
@@ -795,7 +799,7 @@ class AutoShopInteriorScene extends BaseScene {
     });
     this.load.spritesheet("donny", "assets/characters/donny_walk_4dir_128x128_phaser.png?v=030", { frameWidth: 128, frameHeight: 128 });
     this.load.spritesheet("donny_punch", "assets/characters/donny_punch_4dir_128x128_phaser.png?v=030", { frameWidth: 128, frameHeight: 128 });
-    this.load.image("pistol", "assets/weapons/pistol.png?v=044");
+    this.load.image("pistol", "assets/weapons/pistol.png?v=042");
     this.load.image("auto_shop_interior_bg", "assets/interiors/auto_shop_empty_interior.png?v=034");
     this.load.spritesheet("auto_shop_large_props", "assets/props/auto_shop_large_props_256x128.png?v=041", { frameWidth: 256, frameHeight: 128 });
     this.load.spritesheet("auto_shop_small_props", "assets/props/auto_shop_small_props_128x128.png?v=041", { frameWidth: 128, frameHeight: 128 });
@@ -810,7 +814,7 @@ class AutoShopInteriorScene extends BaseScene {
     this.createPlayer(640, 560);
     this.createPlayerAnims();
     this.keys = this.input.keyboard.addKeys({ up:"W", down:"S", left:"A", right:"D", interact:"E", attack:"SPACE", shoot:"F", pause:"P", music:"M" });
-    this.createHUD("v0.4.4 - Worker Zombie + Held Pistol Shot");
+    this.createHUD("v0.4.5 - Exact 182x180 Worker Zombie");
     this.createControls();
     this.ensureMusic();
     this.input.once("pointerdown", () => this.ensureMusic(true));
