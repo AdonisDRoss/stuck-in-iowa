@@ -503,9 +503,9 @@ class MainStreetScene extends BaseScene {
     this.load.image("mainstreet_bg", "assets/maps/mainstreet_bg.png?v=048");
     this.load.spritesheet("mainstreet_large_props", "assets/props/mainstreet_large_props_256x128.png?v=041", { frameWidth: 256, frameHeight: 128 });
     this.load.spritesheet("mainstreet_small_props", "assets/props/mainstreet_small_props_128x128.png?v=041", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("zombie_worker_walk", "assets/zombies/zombie_worker_walk.png?v=046", { frameWidth: 182, frameHeight: 180 });
-    this.load.spritesheet("zombie_worker_attack", "assets/zombies/zombie_worker_attack.png?v=046", { frameWidth: 182, frameHeight: 180 });
-    this.load.spritesheet("zombie_worker_hurt_ko", "assets/zombies/zombie_worker_hurt_ko.png?v=046", { frameWidth: 182, frameHeight: 180 });
+    this.load.spritesheet("zombie_worker_walk", "assets/zombies/zombie_worker_walk.png?v=049", { frameWidth: 182, frameHeight: 180 });
+    this.load.spritesheet("zombie_worker_attack", "assets/zombies/zombie_worker_attack.png?v=049", { frameWidth: 182, frameHeight: 180 });
+    this.load.spritesheet("zombie_worker_hurt_ko", "assets/zombies/zombie_worker_hurt_ko.png?v=049", { frameWidth: 182, frameHeight: 180 });
     this.load.audio("bg_music", "assets/audio/Grain Silo Ghosts.mp3?v=033");
   }
 
@@ -524,7 +524,7 @@ class MainStreetScene extends BaseScene {
     this.createZombieAnims();
     this.createZombie();
     this.keys = this.input.keyboard.addKeys({ up:"W", down:"S", left:"A", right:"D", interact:"E", attack:"SPACE", shoot:"F", pause:"P", music:"M" });
-    this.createHUD("v0.4.8 - Exact 182x180 Worker Zombie");
+    this.createHUD("v0.4.9 - Zombie KO Animation Fix");
     this.createControls();
     this.ensureMusic();
     this.input.once("pointerdown", () => this.ensureMusic(true));
@@ -682,21 +682,48 @@ class MainStreetScene extends BaseScene {
   }
 
   killZombie() {
+    if (!this.zombie || this.zombie.isDying) return;
+
+    this.zombie.isDying = true;
     GameState.zombieDead = true;
-    if (this.zombie) {
-      this.zombie.setVelocity(0, 0);
-      this.zombie.setTexture("zombie_worker_hurt_ko");
-      const dieKey = "zombie_worker_die_" + (this.zombieFacing || "down");
-      this.zombie.anims.play(dieKey, true);
-      this.zombie.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
+
+    const face = this.zombieFacing || "down";
+    const dieKey = "zombie_worker_die_" + face;
+
+    const corpseFrames = {
+      down: 7,
+      up: 15,
+      right: 23,
+      left: 31
+    };
+
+    const corpseFrame = corpseFrames[face] ?? 7;
+
+    this.zombie.setVelocity(0, 0);
+    this.zombie.body.enable = false;
+    this.zombie.clearTint();
+    this.zombie.setTexture("zombie_worker_hurt_ko");
+    this.zombie.setFlipX(false);
+    this.zombie.setDepth(this.zombie.y);
+
+    if (this.anims.exists(dieKey)) {
+      this.zombie.anims.stop();
+      this.zombie.play(dieKey);
+
+      this.zombie.once("animationcomplete-" + dieKey, () => {
         if (!this.zombie) return;
-        const corpseFrame = this.zombieFacing === "up" ? 15 : this.zombieFacing === "right" ? 23 : this.zombieFacing === "left" ? 31 : 7;
+        this.zombie.setTexture("zombie_worker_hurt_ko");
         this.zombie.setFrame(corpseFrame);
-        this.zombie.body.enable = false;
-        this.zombie.setTint(0xaaaaaa);
+        this.zombie.anims.stop();
+        this.zombie.isDead = true;
       });
+    } else {
+      this.zombie.setFrame(corpseFrame);
+      this.zombie.isDead = true;
     }
+
     if (this.zombieLabel) this.zombieLabel.destroy();
+
     GameState.mission = "Search Auto Shop Toolbox";
     this.makeDialogue("Mission", "Zombie down. Search the auto shop toolbox.");
   }
@@ -791,7 +818,7 @@ class AutoShopInteriorScene extends BaseScene {
     this.createPlayer(640, 560);
     this.createPlayerAnims();
     this.keys = this.input.keyboard.addKeys({ up:"W", down:"S", left:"A", right:"D", interact:"E", attack:"SPACE", shoot:"F", pause:"P", music:"M" });
-    this.createHUD("v0.4.8 - Exact 182x180 Worker Zombie");
+    this.createHUD("v0.4.9 - Zombie KO Animation Fix");
     this.createControls();
     this.ensureMusic();
     this.input.once("pointerdown", () => this.ensureMusic(true));
