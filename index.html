@@ -494,26 +494,26 @@ class MainStreetScene extends BaseScene {
     this.load.on("loaderror", (file) => {
       console.warn("Asset failed:", file && file.src);
     });
-    this.load.spritesheet("donny", "assets/characters/donny_walk_4dir_128x128_phaser.png?v=056", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("donny_punch", "assets/characters/donny_punch_4dir_128x128_phaser.png?v=056", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("jim_walk", "assets/characters/jim_walk_4dir_128x128_phaser.png?v=056", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("jim_punch", "assets/characters/jim_punch_4dir_128x128_phaser.png?v=056", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("jim_hurt_ko", "assets/characters/jim_hurt_ko_4dir_128x128_phaser.png?v=056", { frameWidth: 128, frameHeight: 128 });
-    this.load.image("pistol", "assets/weapons/pistol.png?v=056");
-    this.load.image("auto_shop", "assets/buildings/auto_shop.png?v=056");
-    this.load.image("diner", "assets/buildings/diner.png?v=056");
-    this.load.image("hardware_store", "assets/buildings/hardware_store.png?v=056");
-    this.load.image("pharmacy", "assets/buildings/pharmacy.png?v=056");
-    this.load.image("music_store", "assets/buildings/music_store.png?v=056");
-    this.load.spritesheet("store_signs", "assets/signs/store_signs_256x128.png?v=056", { frameWidth: 256, frameHeight: 128 });
-    this.load.image("road_tiles", "assets/tiles/road_tiles_32x32.png?v=056");
-    this.load.image("mainstreet_bg", "assets/maps/mainstreet_bg.png?v=056");
-    this.load.spritesheet("mainstreet_large_props", "assets/props/mainstreet_large_props_256x128.png?v=056", { frameWidth: 256, frameHeight: 128 });
-    this.load.spritesheet("mainstreet_small_props", "assets/props/mainstreet_small_props_128x128.png?v=056", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("zombie_worker_walk", "assets/zombies/zombie_worker_walk.png?v=056", { frameWidth: 182, frameHeight: 180 });
-    this.load.spritesheet("zombie_worker_attack", "assets/zombies/zombie_worker_attack.png?v=056", { frameWidth: 182, frameHeight: 180 });
-    this.load.spritesheet("zombie_worker_hurt_ko", "assets/zombies/zombie_worker_hurt_ko.png?v=056", { frameWidth: 182, frameHeight: 180 });
-    this.load.audio("bg_music", "assets/audio/Grain Silo Ghosts.mp3?v=056");
+    this.load.spritesheet("donny", "assets/characters/donny_walk_4dir_128x128_phaser.png?v=057", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_punch", "assets/characters/donny_punch_4dir_128x128_phaser.png?v=057", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("jim_walk", "assets/characters/jim_walk_4dir_128x128_phaser.png?v=057", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("jim_punch", "assets/characters/jim_punch_4dir_128x128_phaser.png?v=057", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("jim_hurt_ko", "assets/characters/jim_hurt_ko_4dir_128x128_phaser.png?v=057", { frameWidth: 128, frameHeight: 128 });
+    this.load.image("pistol", "assets/weapons/pistol.png?v=057");
+    this.load.image("auto_shop", "assets/buildings/auto_shop.png?v=057");
+    this.load.image("diner", "assets/buildings/diner.png?v=057");
+    this.load.image("hardware_store", "assets/buildings/hardware_store.png?v=057");
+    this.load.image("pharmacy", "assets/buildings/pharmacy.png?v=057");
+    this.load.image("music_store", "assets/buildings/music_store.png?v=057");
+    this.load.spritesheet("store_signs", "assets/signs/store_signs_256x128.png?v=057", { frameWidth: 256, frameHeight: 128 });
+    this.load.image("road_tiles", "assets/tiles/road_tiles_32x32.png?v=057");
+    this.load.image("mainstreet_bg", "assets/maps/mainstreet_bg.png?v=057");
+    this.load.spritesheet("mainstreet_large_props", "assets/props/mainstreet_large_props_256x128.png?v=057", { frameWidth: 256, frameHeight: 128 });
+    this.load.spritesheet("mainstreet_small_props", "assets/props/mainstreet_small_props_128x128.png?v=057", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("zombie_worker_walk", "assets/zombies/zombie_worker_walk.png?v=057", { frameWidth: 182, frameHeight: 180 });
+    this.load.spritesheet("zombie_worker_attack", "assets/zombies/zombie_worker_attack.png?v=057", { frameWidth: 182, frameHeight: 180 });
+    this.load.spritesheet("zombie_worker_hurt_ko", "assets/zombies/zombie_worker_hurt_ko.png?v=057", { frameWidth: 182, frameHeight: 180 });
+    this.load.audio("bg_music", "assets/audio/Grain Silo Ghosts.mp3?v=057");
   }
 
   create(data) {
@@ -531,38 +531,108 @@ class MainStreetScene extends BaseScene {
     this.createZombieAnims();
     this.createZombie();
     this.keys = this.input.keyboard.addKeys({ up:"W", down:"S", left:"A", right:"D", interact:"E", attack:"SPACE", shoot:"F", pause:"P", music:"M" });
-    this.createHUD("v0.5.6 - Black Screen Recovery");
+    this.createHUD("v0.5.7 - Top Row Store Doors");
     this.createControls();
     this.ensureMusic();
     this.input.once("pointerdown", () => this.ensureMusic(true));
   }
 
 
+updateSkyBand() {
+  if (!this.skyBand || !this.horizonBand) return;
+
+  const hour = Math.floor(GameState.minutes / 60) % 24;
+  const isDay = hour >= 6 && hour < 18;
+
+  if (isDay) {
+    this.skyBand.setFillStyle(0x6f86a8, 1);      // dusty blue daytime sky
+    this.horizonBand.setFillStyle(0x6f7a54, 0.95);
+  } else {
+    this.skyBand.setFillStyle(0x070b12, 1);      // black / dark night sky
+    this.horizonBand.setFillStyle(0x101522, 0.96);
+  }
+}
+
 makeMap() {
   this.add.image(this.worldW / 2, this.worldH / 2, "mainstreet_bg")
     .setDisplaySize(this.worldW, this.worldH)
     .setDepth(-100);
 
-  // Temporary cover for the checkerboard/transparent band baked into the current Main Street background.
-  this.add.rectangle(this.worldW / 2, 62, this.worldW, 130, 0x4f5a42, 1).setDepth(-99);
-  this.add.rectangle(this.worldW / 2, 136, this.worldW, 82, 0x667151, 0.95).setDepth(-98);
+  // Day/night backdrop over the exposed top strip.
+  // Blue during day, black/dark navy during night.
+  this.skyBand = this.add.rectangle(this.worldW / 2, 78, this.worldW, 170, 0x6f86a8, 1).setDepth(-99);
+  this.horizonBand = this.add.rectangle(this.worldW / 2, 170, this.worldW, 86, 0x6f7a54, 0.95).setDepth(-98);
+  this.updateSkyBand();
 
   this.storeDoorZones = [];
 
-  // Main Street north-side storefront run.
-  this.placeStoreBuilding({ key: "diner", label: "Diner", x: 330, y: 336, w: 390, h: 245, doorX: 330, doorY: 486, signFrame: 1, signOffsetY: -56, signScale: 0.24, spawn: { x: 330, y: 540 } });
-  this.placeStoreBuilding({ key: "hardware", image: "hardware_store", label: "Hardware", x: 790, y: 336, w: 390, h: 245, doorX: 790, doorY: 486, signFrame: 2, signOffsetY: -56, signScale: 0.24, spawn: { x: 790, y: 540 } });
-  this.placeStoreBuilding({ key: "pharmacy", label: "Pharmacy", x: 1680, y: 336, w: 390, h: 245, doorX: 1680, doorY: 486, signFrame: 3, signOffsetY: -56, signScale: 0.24, spawn: { x: 1680, y: 540 } });
-  this.placeStoreBuilding({ key: "music", image: "music_store", label: "Music Store", x: 2120, y: 336, w: 390, h: 245, doorX: 2120, doorY: 486, signFrame: 4, signOffsetY: -56, signScale: 0.24, spawn: { x: 2120, y: 540 } });
+  // Five-store top row measured to fit across the 2400px Main Street world.
+  // All storefronts use the same display size as the auto shop row target.
+  const storeW = 440;
+  const storeH = 250;
+  const storeY = 292;
+  const signOffsetY = -68;
+  const signScale = 0.25;
+  const doorOffsetY = 86;
 
-  // Jim's auto shop remains the current mission hub.
-  this.autoShopSprite = this.add.image(1235, 334, "auto_shop").setDisplaySize(500, 250).setDepth(359);
-  this.add.image(1235, 278, "store_signs", 0).setScale(0.25).setDepth(900);
-  this.autoShopDoorZone = this.add.zone(1060, 486, 72, 104);
+  this.placeStoreBuilding({
+    key: "diner",
+    label: "Diner",
+    x: 270, y: storeY, w: storeW, h: storeH,
+    doorOffsetX: 0, doorOffsetY,
+    doorW: 46, doorH: 70,
+    signFrame: 1, signOffsetY, signScale,
+    spawn: { x: 270, y: 470 }
+  });
+
+  this.placeStoreBuilding({
+    key: "hardware",
+    image: "hardware_store",
+    label: "Hardware",
+    x: 735, y: storeY, w: storeW, h: storeH,
+    doorOffsetX: 0, doorOffsetY,
+    doorW: 46, doorH: 70,
+    signFrame: 2, signOffsetY, signScale,
+    spawn: { x: 735, y: 470 }
+  });
+
+  // Auto shop remains the mission hub, but is now the same row size as the other storefronts.
+  this.autoShopSprite = this.add.image(1200, storeY, "auto_shop")
+    .setDisplaySize(storeW, storeH)
+    .setDepth(storeY + 25);
+  this.add.image(1200, storeY + signOffsetY, "store_signs", 0)
+    .setScale(signScale)
+    .setDepth(900);
+
+  // Exact door touch zone: left-side visible door on the auto shop photo.
+  this.autoShopDoorZone = this.add.zone(1048, storeY + doorOffsetY, 44, 72);
   this.physics.add.existing(this.autoShopDoorZone, true);
-  this.autoShopBlocker = this.add.rectangle(1235, 297, 472, 146, 0xff0000, 0);
+
+  // Block roof/wall only. Door/front apron remains walkable.
+  this.autoShopBlocker = this.add.rectangle(1200, storeY - 24, storeW * 0.80, storeH * 0.48, 0xff0000, 0);
   this.physics.add.existing(this.autoShopBlocker, true);
   this.solidObjects.add(this.autoShopBlocker);
+
+  this.placeStoreBuilding({
+    key: "pharmacy",
+    label: "Pharmacy",
+    x: 1665, y: storeY, w: storeW, h: storeH,
+    doorOffsetX: 0, doorOffsetY,
+    doorW: 46, doorH: 70,
+    signFrame: 3, signOffsetY, signScale,
+    spawn: { x: 1665, y: 470 }
+  });
+
+  this.placeStoreBuilding({
+    key: "music",
+    image: "music_store",
+    label: "Music Store",
+    x: 2130, y: storeY, w: storeW, h: storeH,
+    doorOffsetX: 0, doorOffsetY,
+    doorW: 46, doorH: 70,
+    signFrame: 4, signOffsetY, signScale,
+    spawn: { x: 2130, y: 470 }
+  });
 
   // Street props.
   this.makeStreetLargeProp(900, 455, 3, 0.46, 120, 40);      // tire rack
@@ -584,21 +654,34 @@ placeStoreBuilding(cfg) {
   const imageKey = cfg.image || cfg.key;
   const building = this.add.image(cfg.x, cfg.y, imageKey)
     .setDisplaySize(cfg.w, cfg.h)
-    .setDepth(cfg.y);
+    .setDepth(cfg.y + 25);
 
+  const signOffsetY = (typeof cfg.signOffsetY === "number") ? cfg.signOffsetY : -84;
+  const signScale = (typeof cfg.signScale === "number") ? cfg.signScale : 0.28;
   if (this.textures.exists("store_signs")) {
-    this.add.image(cfg.x, cfg.y - 105, "store_signs", cfg.signFrame)
-      .setScale(0.28)
+    this.add.image(cfg.x, cfg.y + signOffsetY, "store_signs", cfg.signFrame)
+      .setScale(signScale)
       .setDepth(900);
   }
 
-  const blocker = this.add.rectangle(cfg.x, cfg.y - 20, cfg.w * 0.88, cfg.h * 0.58, 0xff0000, 0);
+  // Block only the wall / roof area. The door and front apron stay walkable.
+  const blocker = this.add.rectangle(cfg.x, cfg.y - 24, cfg.w * 0.80, cfg.h * 0.48, 0xff0000, 0);
   this.physics.add.existing(blocker, true);
   this.solidObjects.add(blocker);
 
-  const door = this.add.zone(cfg.doorX, cfg.doorY, 74, 92);
+  // Exact door-touch transition zone, not the whole building photo.
+  const doorX = cfg.x + (cfg.doorOffsetX || 0);
+  const doorY = cfg.y + (cfg.doorOffsetY || 86);
+  const door = this.add.zone(doorX, doorY, cfg.doorW || 46, cfg.doorH || 70);
   this.physics.add.existing(door, true);
-  this.storeDoorZones.push({ key: cfg.key, label: cfg.label, zone: door, spawn: cfg.spawn });
+
+  this.storeDoorZones.push({
+    key: cfg.key,
+    label: cfg.label,
+    zone: door,
+    spawn: cfg.spawn || { x: doorX, y: doorY + 90 }
+  });
+
   return building;
 }
 
@@ -730,12 +813,18 @@ enterStore(key) {
 tryInteract() {
   if (this.dialogueBox && this.dialogueBox.active) this.dialogueBox.destroy();
 
+  // Store transitions now require Donny to touch the exact visible door zone.
   for (const door of (this.storeDoorZones || [])) {
-    const d = Phaser.Math.Distance.Between(this.player.x, this.player.y, door.zone.x, door.zone.y);
-    if (d < 95) {
+    if (this.physics.overlap(this.player, door.zone)) {
       this.enterStore(door.key);
       return;
     }
+  }
+
+  // Auto shop transition also requires touching the visible door zone.
+  if (this.physics.overlap(this.player, this.autoShopDoorZone)) {
+    this.scene.start("AutoShopInteriorScene");
+    return;
   }
 
   const dJim = Phaser.Math.Distance.Between(this.player.x, this.player.y, this.jim.x, this.jim.y);
@@ -755,12 +844,6 @@ tryInteract() {
     } else {
       this.makeDialogue("Jim", "Clear the walker and check the toolbox inside the shop.");
     }
-    return;
-  }
-
-  const dDoor = Phaser.Math.Distance.Between(this.player.x, this.player.y, 1045, 425);
-  if (dDoor < 95) {
-    this.scene.start("AutoShopInteriorScene");
     return;
   }
 }
@@ -900,25 +983,47 @@ tryInteract() {
     this.handleVirtualStick();
     if (Phaser.Input.Keyboard.JustDown(this.keys.pause)) this.togglePauseMenu();
     if (Phaser.Input.Keyboard.JustDown(this.keys.music)) this.toggleMusic();
+
     if (GameState.pausedMenuOpen) {
       this.player.setVelocity(0);
       this.updateHUD();
+      this.updateSkyBand();
       return;
     }
+
     if (Phaser.Input.Keyboard.JustDown(this.keys.interact)) this.tryInteract();
     if (Phaser.Input.Keyboard.JustDown(this.keys.attack)) this.attack();
+
     this.handlePlayerMovement([this.autoShopBlocker, this.solidObjects]);
-    if (this.physics.overlap(this.player, this.autoShopDoorZone)) { this.scene.start("AutoShopInteriorScene"); return; }
-    for (const door of (this.storeDoorZones || [])) {
-      if (this.physics.overlap(this.player, door.zone)) { this.enterStore(door.key); return; }
+
+    // Door transitions: only fire when Donny overlaps the small door zone.
+    if (this.physics.overlap(this.player, this.autoShopDoorZone)) {
+      this.scene.start("AutoShopInteriorScene");
+      return;
     }
+
+    for (const door of (this.storeDoorZones || [])) {
+      if (this.physics.overlap(this.player, door.zone)) {
+        this.enterStore(door.key);
+        return;
+      }
+    }
+
     if (Phaser.Input.Keyboard.JustDown(this.keys.shoot)) this.shootPistol();
+
     this.updateZombie();
     this.updateJimFollow();
+
     GameState.minutes += 0.03;
-    if (GameState.minutes >= 1440) { GameState.minutes = 0; GameState.day += 1; }
+    if (GameState.minutes >= 1440) {
+      GameState.minutes = 0;
+      GameState.day += 1;
+    }
+
+    this.updateSkyBand();
     this.updateHUD();
   }
+
 }
 
 class AutoShopInteriorScene extends BaseScene {
@@ -927,13 +1032,13 @@ class AutoShopInteriorScene extends BaseScene {
     this.load.on("loaderror", (file) => {
       console.warn("Asset failed:", file && file.src);
     });
-    this.load.spritesheet("donny", "assets/characters/donny_walk_4dir_128x128_phaser.png?v=056", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("donny_punch", "assets/characters/donny_punch_4dir_128x128_phaser.png?v=056", { frameWidth: 128, frameHeight: 128 });
-    this.load.image("pistol", "assets/weapons/pistol.png?v=056");
-    this.load.image("auto_shop_interior_bg", "assets/interiors/auto_shop_empty_interior.png?v=056");
-    this.load.spritesheet("auto_shop_large_props", "assets/props/auto_shop_large_props_256x128.png?v=056", { frameWidth: 256, frameHeight: 128 });
-    this.load.spritesheet("auto_shop_small_props", "assets/props/auto_shop_small_props_128x128.png?v=056", { frameWidth: 128, frameHeight: 128 });
-    this.load.audio("bg_music", "assets/audio/Grain Silo Ghosts.mp3?v=056");
+    this.load.spritesheet("donny", "assets/characters/donny_walk_4dir_128x128_phaser.png?v=057", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_punch", "assets/characters/donny_punch_4dir_128x128_phaser.png?v=057", { frameWidth: 128, frameHeight: 128 });
+    this.load.image("pistol", "assets/weapons/pistol.png?v=057");
+    this.load.image("auto_shop_interior_bg", "assets/interiors/auto_shop_empty_interior.png?v=057");
+    this.load.spritesheet("auto_shop_large_props", "assets/props/auto_shop_large_props_256x128.png?v=057", { frameWidth: 256, frameHeight: 128 });
+    this.load.spritesheet("auto_shop_small_props", "assets/props/auto_shop_small_props_128x128.png?v=057", { frameWidth: 128, frameHeight: 128 });
+    this.load.audio("bg_music", "assets/audio/Grain Silo Ghosts.mp3?v=057");
   }
   create() {
     this.setupMobile();
@@ -944,7 +1049,7 @@ class AutoShopInteriorScene extends BaseScene {
     this.createPlayer(640, 560);
     this.createPlayerAnims();
     this.keys = this.input.keyboard.addKeys({ up:"W", down:"S", left:"A", right:"D", interact:"E", attack:"SPACE", shoot:"F", pause:"P", music:"M" });
-    this.createHUD("v0.5.6 - Black Screen Recovery");
+    this.createHUD("v0.5.7 - Top Row Store Doors");
     this.createControls();
     this.ensureMusic();
     this.input.once("pointerdown", () => this.ensureMusic(true));
@@ -1038,22 +1143,22 @@ class StoreInteriorScene extends BaseScene {
     this.load.on("loaderror", (file) => {
       console.warn("Asset failed:", file && file.src);
     });
-    this.load.spritesheet("donny", "assets/characters/donny_walk_4dir_128x128_phaser.png?v=056", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("donny_punch", "assets/characters/donny_punch_4dir_128x128_phaser.png?v=056", { frameWidth: 128, frameHeight: 128 });
-    this.load.image("pistol", "assets/weapons/pistol.png?v=056");
-    this.load.image("diner_interior", "assets/interiors/diner_interior.png?v=056");
-    this.load.image("hardware_store_interior", "assets/interiors/hardware_store_interior.png?v=056");
-    this.load.image("pharmacy_interior", "assets/interiors/pharmacy_interior.png?v=056");
-    this.load.image("music_store_interior", "assets/interiors/music_store_interior.png?v=056");
-    this.load.spritesheet("diner_large_props", "assets/props/diner_large_props_256x128.png?v=056", { frameWidth: 256, frameHeight: 128 });
-    this.load.spritesheet("diner_small_props", "assets/props/diner_small_props_128x128.png?v=056", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("hardware_large_props", "assets/props/hardware_large_props_256x128.png?v=056", { frameWidth: 256, frameHeight: 128 });
-    this.load.spritesheet("hardware_small_props", "assets/props/hardware_small_props_128x128.png?v=056", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("pharmacy_large_props", "assets/props/pharmacy_large_props_256x128.png?v=056", { frameWidth: 256, frameHeight: 128 });
-    this.load.spritesheet("pharmacy_small_props", "assets/props/pharmacy_small_props_128x128.png?v=056", { frameWidth: 128, frameHeight: 128 });
-    this.load.spritesheet("music_store_large_props", "assets/props/music_store_large_props_256x128.png?v=056", { frameWidth: 256, frameHeight: 128 });
-    this.load.spritesheet("music_store_small_props", "assets/props/music_store_small_props_128x128.png?v=056", { frameWidth: 128, frameHeight: 128 });
-    this.load.audio("bg_music", "assets/audio/Grain Silo Ghosts.mp3?v=056");
+    this.load.spritesheet("donny", "assets/characters/donny_walk_4dir_128x128_phaser.png?v=057", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("donny_punch", "assets/characters/donny_punch_4dir_128x128_phaser.png?v=057", { frameWidth: 128, frameHeight: 128 });
+    this.load.image("pistol", "assets/weapons/pistol.png?v=057");
+    this.load.image("diner_interior", "assets/interiors/diner_interior.png?v=057");
+    this.load.image("hardware_store_interior", "assets/interiors/hardware_store_interior.png?v=057");
+    this.load.image("pharmacy_interior", "assets/interiors/pharmacy_interior.png?v=057");
+    this.load.image("music_store_interior", "assets/interiors/music_store_interior.png?v=057");
+    this.load.spritesheet("diner_large_props", "assets/props/diner_large_props_256x128.png?v=057", { frameWidth: 256, frameHeight: 128 });
+    this.load.spritesheet("diner_small_props", "assets/props/diner_small_props_128x128.png?v=057", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("hardware_large_props", "assets/props/hardware_large_props_256x128.png?v=057", { frameWidth: 256, frameHeight: 128 });
+    this.load.spritesheet("hardware_small_props", "assets/props/hardware_small_props_128x128.png?v=057", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("pharmacy_large_props", "assets/props/pharmacy_large_props_256x128.png?v=057", { frameWidth: 256, frameHeight: 128 });
+    this.load.spritesheet("pharmacy_small_props", "assets/props/pharmacy_small_props_128x128.png?v=057", { frameWidth: 128, frameHeight: 128 });
+    this.load.spritesheet("music_store_large_props", "assets/props/music_store_large_props_256x128.png?v=057", { frameWidth: 256, frameHeight: 128 });
+    this.load.spritesheet("music_store_small_props", "assets/props/music_store_small_props_128x128.png?v=057", { frameWidth: 128, frameHeight: 128 });
+    this.load.audio("bg_music", "assets/audio/Grain Silo Ghosts.mp3?v=057");
   }
 
   create(data) {
@@ -1067,7 +1172,7 @@ class StoreInteriorScene extends BaseScene {
     this.createPlayer(640, 610);
     this.createPlayerAnims();
     this.keys = this.input.keyboard.addKeys({ up:"W", down:"S", left:"A", right:"D", interact:"E", attack:"SPACE", shoot:"F", pause:"P", music:"M" });
-    this.createHUD("v0.5.6 - Black Screen Recovery");
+    this.createHUD("v0.5.7 - Top Row Store Doors");
     this.createControls();
     this.ensureMusic();
     this.input.once("pointerdown", () => this.ensureMusic(true));
