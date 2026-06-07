@@ -240,8 +240,9 @@ class MainStreetScene extends BaseScene {
     this.load.spritesheet("donny", "assets/characters/donny_walk_4dir_128x128_phaser.png?v=030", { frameWidth: 128, frameHeight: 128 });
     this.load.spritesheet("donny_punch", "assets/characters/donny_punch_4dir_128x128_phaser.png?v=030", { frameWidth: 128, frameHeight: 128 });
     this.load.image("auto_shop", "assets/buildings/auto_shop.png?v=030");
-    this.load.image("road_tiles", "assets/tiles/road_tiles_32x32.png?v=030");
-    this.load.spritesheet("farmer_walk", "assets/zombies/farmer_walker_walk.png?v=030", { frameWidth: 256, frameHeight: 256 });
+    this.load.image("road_tiles", "assets/tiles/road_tiles_32x32.png?v=031");
+    this.load.spritesheet("mainstreet_props", "assets/props/mainstreet_props_64x64.png?v=031", { frameWidth: 64, frameHeight: 64 });
+    this.load.spritesheet("farmer_walk", "assets/zombies/farmer_walker_walk.png?v=031", { frameWidth: 256, frameHeight: 256 });
   }
 
   create(data) {
@@ -258,7 +259,7 @@ class MainStreetScene extends BaseScene {
     this.createJim();
     this.createZombie();
     this.keys = this.input.keyboard.addKeys({ up:"W", down:"S", left:"A", right:"D", interact:"E", attack:"SPACE" });
-    this.createHUD("v0.3.0 - First Playable");
+    this.createHUD("v0.3.1 - Props Path Fix");
     this.createControls();
   }
 
@@ -299,12 +300,19 @@ class MainStreetScene extends BaseScene {
     this.autoShopBlocker = this.add.rectangle(1150, 245, 680, 220, 0xff0000, 0);
     this.physics.add.existing(this.autoShopBlocker, true);
     this.enterAutoShop = this.add.rectangle(1150, 430, 86, 52, 0x111111);
-    this.makeSolidProp(820, 420, 80, 48, 0x202020, "TIRES");
-    this.makeSolidProp(930, 430, 74, 40, 0x5a4a2f, "SCRAP");
-    this.makeSolidProp(1465, 420, 94, 54, 0x263626, "DUMP");
-    this.makeSolidProp(1015, 438, 58, 38, 0x70431d, "TOOLS");
-    this.makeSolidProp(850, 480, 250, 16, 0x2a2a2a, ""); this.makeSolidProp(1450, 480, 250, 16, 0x2a2a2a, "");
-    this.makeSolidProp(720, 355, 16, 250, 0x2a2a2a, ""); this.makeSolidProp(1580, 355, 16, 250, 0x2a2a2a, "");
+    // Auto Shop exterior props from assets/props/mainstreet_props_64x64.png
+    this.makeSpriteProp(820, 420, 0, 1.45, 76, 48);      // tire stack
+    this.makeSpriteProp(930, 430, 3, 1.35, 72, 42);      // scrap pile
+    this.makeSpriteProp(1465, 420, 1, 1.55, 92, 56);     // dumpster
+    this.makeSpriteProp(1015, 438, 2, 1.15, 58, 42);     // tool crate
+    this.makeSpriteProp(750, 455, 4, 1.05, 42, 48);      // oil drum
+    this.makeSpriteProp(1100, 465, 6, 1.10, 62, 34);     // pallet
+
+    // Service-yard fence pieces.
+    this.makeSpriteProp(850, 480, 18, 2.55, 250, 18);
+    this.makeSpriteProp(1450, 480, 18, 2.55, 250, 18);
+    this.makeSpriteProp(720, 355, 18, 2.55, 18, 250, true);
+    this.makeSpriteProp(1580, 355, 18, 2.55, 18, 250, true);
     this.add.text(1150, 78, "AUTO SHOP SAFEHOUSE", { fontSize:"22px", color:"#e6e6e6", fontFamily:"Arial" }).setOrigin(0.5);
     this.makeBuilding(1600, 260, 330, 220, "BAR", true);
     this.makeBuilding(2050, 260, 360, 220, "MOTEL", true);
@@ -313,21 +321,23 @@ class MainStreetScene extends BaseScene {
     this.makeBuilding(1350, 1140, 420, 220, "CLINIC", true);
     this.makeBuilding(1900, 1140, 420, 220, "POLICE", true);
 
-    // Street/house prop pass.
-    this.makeSolidProp(265, 685, 42, 84, 0x9c241d, "STOP");
-    this.makeSolidProp(1950, 690, 42, 84, 0x9c241d, "STOP");
-    this.makeSolidProp(520, 935, 30, 120, 0x1c1c1c, "");
-    this.makeSolidProp(1680, 935, 30, 120, 0x1c1c1c, "");
-    this.makeSolidProp(310, 1020, 52, 52, 0x234e70, "MAIL");
-    this.makeSolidProp(810, 1020, 52, 52, 0x234e70, "MAIL");
-    this.makeSolidProp(1270, 1015, 60, 60, 0x285a28, "TRASH");
-    this.makeSolidProp(1580, 1015, 60, 60, 0x285a28, "TRASH");
-    this.makeSolidProp(455, 995, 190, 22, 0x6b5028, "");
-    this.makeSolidProp(965, 995, 190, 22, 0x6b5028, "");
-    this.makeSolidProp(1410, 1005, 190, 22, 0x6b5028, "");
-    this.makeSolidProp(1870, 1005, 190, 22, 0x6b5028, "");
-    this.makeSolidProp(515, 475, 200, 80, 0x6b3a1d, "PICKUP");
-    this.makeSolidProp(1210, 510, 150, 65, 0x333333, "CAR");
+    // Street/house prop pass from sprite sheet.
+    this.makeSpriteProp(265, 685, 8, 1.35, 36, 70);      // stop sign
+    this.makeSpriteProp(1950, 690, 8, 1.35, 36, 70);     // stop sign
+    this.makeSpriteProp(520, 935, 9, 1.65, 26, 92);      // street light
+    this.makeSpriteProp(1680, 935, 9, 1.65, 26, 92);     // street light
+    this.makeSpriteProp(310, 1020, 10, 1.05, 42, 34);    // mailbox
+    this.makeSpriteProp(810, 1020, 10, 1.05, 42, 34);    // mailbox
+    this.makeSpriteProp(1270, 1015, 11, 1.05, 42, 46);   // trash can
+    this.makeSpriteProp(1580, 1015, 11, 1.05, 42, 46);   // trash can
+    this.makeSpriteProp(455, 995, 16, 2.25, 190, 22);    // wood fence
+    this.makeSpriteProp(965, 995, 16, 2.25, 190, 22);    // wood fence
+    this.makeSpriteProp(1410, 1005, 16, 2.25, 190, 22);  // wood fence
+    this.makeSpriteProp(1870, 1005, 16, 2.25, 190, 22);  // wood fence
+    this.makeSpriteProp(515, 475, 24, 2.45, 190, 76);    // abandoned pickup
+    this.makeSpriteProp(1210, 510, 25, 2.05, 140, 60);   // abandoned sedan
+    this.makeSpriteProp(1225, 1015, 20, 1.20, 52, 36);   // bush
+    this.makeSpriteProp(1815, 1015, 20, 1.20, 52, 36);   // bush
   }
 
   makeBuilding(x, y, w, h, label, solid) {
@@ -348,6 +358,22 @@ class MainStreetScene extends BaseScene {
     this.solidObjects.add(prop);
     if (label) this.add.text(x, y, label, { fontSize:"11px", color:"#ffffff", fontFamily:"Arial" }).setOrigin(0.5);
     return prop;
+  }
+
+  makeSpriteProp(x, y, frame, scale, hitW, hitH, rotateVertical = false) {
+    const sprite = this.add.image(x, y, "mainstreet_props", frame);
+    sprite.setScale(scale);
+    sprite.setDepth(y);
+
+    if (rotateVertical) {
+      sprite.setAngle(90);
+    }
+
+    const blocker = this.add.rectangle(x, y, hitW, hitH, 0xff0000, 0);
+    this.physics.add.existing(blocker, true);
+    this.solidObjects.add(blocker);
+
+    return sprite;
   }
 
   createJim() {
